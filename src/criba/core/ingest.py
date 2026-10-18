@@ -385,3 +385,34 @@ def open_book(path: Path, on_page: OnPage | None = None) -> Book:
         info.has_toc,
     )
     return book
+
+
+_STOPWORDS: dict[str, frozenset[str]] = {
+    "es": frozenset(
+        "el la los las de del que y en un una por con para es se no al lo como".split()
+    ),
+    "en": frozenset("the of and to in is that for with as are by this be it on from".split()),
+    "fr": frozenset("le la les des est et une dans pour que qui du au sur pas ce".split()),
+    "pt": frozenset("o os as de que não uma para com do da em um por mais dos".split()),
+    "it": frozenset("il di che è per non sono del della un una gli nel con le".split()),
+    "de": frozenset("der die das und ist nicht mit ein eine zu den von sich auf für".split()),
+    "ca": frozenset("el la els les de que i en un una per amb és del al dels no".split()),
+}
+_WORD = re.compile(r"[a-zà-ÿ]+")
+
+
+def detect_language(book: Book, sample_chars: int = 60_000) -> str:
+    """Idioma del libro por palabras frecuentes. Devuelve un código (``es``, ``en``…)."""
+    sample: list[str] = []
+    size = 0
+    for page in book.pages:
+        if size >= sample_chars:
+            break
+        text = page.text.lower()
+        sample.append(text)
+        size += len(text)
+    words = _WORD.findall(" ".join(sample))
+    if not words:
+        return "es"
+    scores = {lang: sum(1 for w in words if w in stop) for lang, stop in _STOPWORDS.items()}
+    return max(scores, key=lambda lang: scores[lang])

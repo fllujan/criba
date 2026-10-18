@@ -39,10 +39,10 @@ class Fixtures:
 def _paragraph(tema: str, apartado: str, n: int) -> str:
     """Párrafo determinista y realista con tildes, eñes y una definición."""
     variantes = [
-        f"Se denomina {apartado.lower()} al conjunto de procesos que estudia la {tema.lower()} "
+        f"Se denomina {apartado.lower()} al conjunto de procesos que estudia {tema.lower()} "
         f"dentro del organismo. Es importante destacar que este concepto aparece en el examen "
         f"con frecuencia, y que su comprensión exige conocer los niveles de organización.",
-        f"Como ejemplo, el pequeño pingüino de la Antártida ilustra cómo la {tema.lower()} "
+        f"Como ejemplo, el pequeño pingüino de la Antártida ilustra cómo {tema.lower()} "
         f"condiciona la adaptación al frío. Este caso es una anécdota frecuente en los libros, "
         f"pero no añade datos nuevos a lo explicado sobre {apartado.lower()}.",
         f"En 1858, Darwin y Wallace publicaron trabajos que se relacionan con {apartado.lower()}. "
@@ -169,6 +169,11 @@ def _protected(path: Path) -> Path:
 def _damaged(path: Path) -> Path:
     path.write_bytes(b"%PDF-1.7\n%\xe2\xe3\xcf\xd3\n1 0 obj << /Type /Catalog basura sin cerrar")
     return path
+
+
+def build_small(path: Path) -> Path:
+    """Libro de unas 20 páginas para la prueba real contra la API (``-m live``)."""
+    return _book(path, chapters=2, pages_per_chapter=10, with_toc=True)
 
 
 def build_all(folder: Path) -> Fixtures:

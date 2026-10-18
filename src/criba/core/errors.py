@@ -49,6 +49,14 @@ class ErrorKind(Enum):
         (Action.WAIT, Action.CANCEL),
     )
     DISK_FULL = ("No hay espacio para guardar el PDF.", (Action.CHOOSE_OTHER_FOLDER,))
+    CANNOT_WRITE = (
+        "No se puede guardar en esa carpeta. Elige otra.",
+        (Action.CHOOSE_OTHER_FOLDER,),
+    )
+    NO_KEY = (
+        "Falta la clave de API de Anthropic. Añádela en Ajustes.",
+        (Action.CHANGE_KEY,),
+    )
 
     @property
     def message(self) -> str:

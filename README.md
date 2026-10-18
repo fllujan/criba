@@ -7,7 +7,7 @@ Criba convierte un libro de texto en PDF en dos documentos de estudio:
 
 App de escritorio para **macOS** (Apple Silicon e Intel) y **Windows 10/11**. Usa la API de Claude (Anthropic). El libro solo sale de tu ordenador hacia la API de Anthropic. No hay telemetría.
 
-> Estado: en desarrollo (fase F0, la base del proyecto). La especificación completa está en [`spec.md`](spec.md).
+> Estado: en desarrollo. Ya funcionan la lectura del PDF (F1) y el análisis con IA (F2). La especificación completa está en [`spec.md`](spec.md).
 
 ## Desarrollo
 
@@ -19,6 +19,17 @@ uv run pre-commit install    # pasa ruff y mypy en cada commit
 uv run python -m criba       # abre la app
 uv run python -m criba.cli libro.pdf --nivel normal --salida ./out
 ```
+
+### Línea de comandos
+
+```bash
+criba libro.pdf --solo-analisis            # capítulos y coste estimado, sin gastar
+criba libro.pdf --simulado --si            # todo el proceso con IA simulada (gratis)
+criba libro.pdf                            # proceso real: pide confirmación antes de gastar
+criba libro.pdf --capitulos 2,3 --paginas 10-80 --nivel completo --examen test
+```
+
+La clave de API se lee de `ANTHROPIC_API_KEY` o del llavero del sistema. Lo procesado se guarda en caché: si cancelas (Ctrl+C) o repites el mismo libro, lo ya pagado no se vuelve a pagar.
 
 ### Calidad
 
