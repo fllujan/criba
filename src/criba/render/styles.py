@@ -4,6 +4,7 @@ Los PDF se imprimen bien en blanco y negro: la prioridad nunca va solo en color,
 siempre también con texto (ALTA/MEDIA/BAJA) y puntos (●●●).
 """
 
+import re
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
@@ -372,9 +373,16 @@ def format_date(iso: str, language: str) -> str:
     return f"{day} de {MONTHS['es'][month - 1]} de {year}"
 
 
+_SYMBOLS = re.compile("[★☆●○◆◇→■□▲△]+")
+
+
 def esc(text: str) -> str:
-    """Escapa el texto para los párrafos de ReportLab (que usan marcado XML)."""
-    return escape(text, {'"': "&quot;"})
+    """Escapa el texto para los párrafos de ReportLab (que usan marcado XML).
+
+    Los símbolos que Source Serif 4 no tiene (★, ●…) se escriben con Inter.
+    """
+    escaped = escape(text, {'"': "&quot;"})
+    return _SYMBOLS.sub(lambda m: f'<font name="{SANS}">{m.group(0)}</font>', escaped)
 
 
 def page_ref(pages: list[int] | tuple[int, ...]) -> str:
@@ -391,6 +399,15 @@ def page_ref(pages: list[int] | tuple[int, ...]) -> str:
     parts = [str(g[0]) if len(g) == 1 else f"{g[0]}–{g[-1]}" for g in groups]
     prefix = "p." if len(nums) == 1 else "pp."
     return f"{prefix} {', '.join(parts)}"
+
+
+MAX_CELL_CHARS = 240  # títulos en tablas: una celda no puede pasar de una página
+
+
+def short(text: str, limit: int = MAX_CELL_CHARS) -> str:
+    """Acorta textos desmesurados (títulos en tablas e índices) con «…»."""
+    text = " ".join(text.split())
+    return text if len(text) <= limit else text[: limit - 1].rstrip() + "…"
 
 
 def page_span(start: int, end: int) -> str:

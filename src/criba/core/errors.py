@@ -61,6 +61,10 @@ class ErrorKind(Enum):
         "No se ha podido procesar el libro. Lo procesado se ha guardado.",
         (Action.RETRY,),
     )
+    RENDER_FAILED = (
+        "No se han podido generar los PDF. Lo procesado se ha guardado.",
+        (Action.RETRY,),
+    )
     NO_KEY = (
         "Falta la clave de API de Anthropic. Añádela en Ajustes.",
         (Action.CHANGE_KEY,),

@@ -25,6 +25,7 @@ from criba.render.styles import (
     page_span,
     priority_markup,
     ref_markup,
+    short,
     styles,
 )
 
@@ -46,7 +47,7 @@ def _contents(libro: Libro, pages: PageMap) -> list[Flowable]:
         key = chapter_key(i)
         rows.append(
             [
-                Paragraph(f'<a href="#{key}">{esc(cap.titulo)}</a>', st.toc),
+                Paragraph(f'<a href="#{key}">{esc(short(cap.titulo))}</a>', st.toc),
                 Paragraph(priority_markup(cap.prioridad, libro.idioma), st.table_cell),
                 Paragraph(page_span(*cap.paginas), st.toc_num),
                 Paragraph(f'<a href="#{key}">{pages.get(key, "")}</a>', st.toc_num),
@@ -100,14 +101,12 @@ def _concept(c: Concepto) -> Flowable:
         if c.cita_literal:
             parts.append(Paragraph(f"«{esc(c.cita_literal)}»" + ref_markup(c.paginas), st.quote))
         return box(parts)
-    if c.tipo == "formula" and c.cita_literal:
-        return box(
-            [
-                Paragraph(esc(c.titulo), st.box_title),
-                Paragraph(esc(c.cita_literal), st.formula),
-                Paragraph(esc(c.explicacion) + ref_markup(c.paginas), st.body_tight),
-            ]
-        )
+    if c.tipo == "formula":
+        parts = [Paragraph(esc(c.titulo), st.box_title)]
+        if c.cita_literal:
+            parts.append(Paragraph(esc(c.cita_literal), st.formula))
+        parts.append(Paragraph(esc(c.explicacion) + ref_markup(c.paginas), st.body_tight))
+        return box(parts)
     return Paragraph(f"{title} {esc(c.explicacion)}{ref_markup(c.paginas)}", st.body)
 
 
@@ -115,7 +114,7 @@ def _chapter(libro: Libro, index: int, cap: Capitulo) -> list[Flowable]:
     st, lb = styles(), labels(libro.idioma)
     key = chapter_key(index)
     story: list[Flowable] = [
-        Heading(esc(cap.titulo), st.h1, key=key, outline=cap.titulo),
+        Heading(esc(short(cap.titulo, 400)), st.h1, key=key, outline=short(cap.titulo, 120)),
         chapter_meta(cap, libro.idioma),
         Paragraph(esc(cap.resumen), st.lead),
     ]

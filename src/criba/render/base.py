@@ -11,6 +11,7 @@ from typing import Any
 
 from reportlab.lib.colors import Color
 from reportlab.lib.styles import ParagraphStyle
+from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus import (
     BaseDocTemplate,
@@ -41,15 +42,33 @@ CONTENT_WIDTH = PAGE_SIZE[0] - 2 * MARGIN
 
 
 class Heading(Paragraph):  # type: ignore[misc]
-    """Título que crea un marcador (índice lateral) y un destino para enlaces."""
+    """Título que crea un marcador (índice lateral) y un destino para enlaces.
+
+    Acepta los argumentos de ``Paragraph`` porque ReportLab crea la continuación
+    con el mismo constructor cuando un título larguísimo se parte entre páginas.
+    """
 
     def __init__(
-        self, text: str, style: ParagraphStyle, *, key: str, outline: str, level: int = 0
+        self,
+        text: str,
+        style: ParagraphStyle,
+        *args: object,
+        key: str = "",
+        outline: str = "",
+        level: int = 0,
+        **kwargs: object,
     ) -> None:
-        super().__init__(text, style)
+        super().__init__(text, style, *args, **kwargs)
         self.key = key
         self.outline = outline
         self.level = level
+
+    def split(self, avail_width: float, avail_height: float) -> list[Flowable]:
+        """Parte el título conservando el marcador en la primera parte."""
+        parts: list[Flowable] = super().split(avail_width, avail_height)
+        if parts and isinstance(parts[0], Heading):
+            parts[0].key, parts[0].outline, parts[0].level = self.key, self.outline, self.level
+        return parts
 
 
 class CheckBox(Flowable):  # type: ignore[misc]
@@ -120,13 +139,13 @@ class CribaDoc(BaseDocTemplate):  # type: ignore[misc]
         canvas.line(MARGIN, y + 11, PAGE_SIZE[0] - MARGIN, y + 11)
         canvas.setFont(SANS, 8)
         canvas.setFillColor(MUTED)
-        canvas.drawString(MARGIN, y, self.footer)
+        canvas.drawString(MARGIN, y, fit_text(self.footer, SANS, 8, CONTENT_WIDTH - 40))
         canvas.drawRightString(PAGE_SIZE[0] - MARGIN, y, str(doc.page))
         canvas.restoreState()
 
     def afterFlowable(self, flowable: Flowable) -> None:  # noqa: N802 (API de ReportLab)
         """Crea el marcador y apunta la página de cada título."""
-        if isinstance(flowable, Heading):
+        if isinstance(flowable, Heading) and flowable.key and flowable.key not in self.page_map:
             self.canv.bookmarkPage(flowable.key)
             self.canv.addOutlineEntry(
                 flowable.outline, flowable.key, level=flowable.level, closed=flowable.level > 0
@@ -134,25 +153,31 @@ class CribaDoc(BaseDocTemplate):  # type: ignore[misc]
             self.page_map[flowable.key] = self.page
 
 
+def fit_text(text: str, font: str, size: float, width: float) -> str:
+    """Recorta ``text`` con «…» para que quepa en ``width`` puntos."""
+    if stringWidth(text, font, size) <= width:
+        return text
+    while text and stringWidth(text + "…", font, size) > width:
+        text = text[:-1]
+    return text.rstrip() + "…"
+
+
 def build(
-    path: Path,
+    target: Path,
     story_for: Callable[[PageMap], list[Flowable]],
     *,
     title: str,
     footer: str,
     subject: str,
 ) -> Path:
-    """Genera el PDF en dos pasadas y lo guarda de forma atómica en ``path``."""
+    """Genera el PDF en dos pasadas en ``target`` (ruta temporal: la confirma quien llama)."""
     register_fonts()
     first = CribaDoc(io.BytesIO(), title=title, footer=footer, subject=subject)
     first.build(story_for({}))
     pages = dict(first.page_map)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(f".{path.name}.tmp")
-    doc = CribaDoc(str(tmp), title=title, footer=footer, subject=subject)
+    doc = CribaDoc(str(target), title=title, footer=footer, subject=subject)
     doc.build(story_for(pages))
-    tmp.replace(path)
-    return path
+    return target
 
 
 def box(
@@ -163,7 +188,7 @@ def box(
     padding: float = 8,
 ) -> Flowable:
     """Recuadro con fondo suave y borde izquierdo de 3 pt (definiciones, fórmulas)."""
-    table = Table([[list(content)]], colWidths=[CONTENT_WIDTH])
+    table = Table([[list(content)]], colWidths=[CONTENT_WIDTH], splitInRow=1)
     commands: list[tuple[Any, ...]] = [
         ("BACKGROUND", (0, 0), (-1, -1), background),
         ("LEFTPADDING", (0, 0), (-1, -1), padding + 2),

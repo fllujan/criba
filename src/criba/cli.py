@@ -147,13 +147,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     """Punto de entrada de la CLI. Devuelve el código de salida."""
     args = parse_args(argv)
     log = logs.setup()
+    if args.pdf.suffix.lower() == ".json":
+        return _render_only(args.pdf, args.salida)
     prefs = settings.load()
     model = args.modelo or prefs.model
     salida = args.salida or prefs.output_path
     log.info("CLI: %s nivel=%s examen=%s modelo=%s", args.pdf, args.nivel, args.examen, model)
     cancel = CancelToken()
-    if args.pdf.suffix.lower() == ".json":
-        return _render_only(args.pdf, args.salida)
     try:
         title = args.asignatura or ingest.validate(args.pdf).title
         options = Options(

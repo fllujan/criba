@@ -26,6 +26,7 @@ from criba.render.styles import (
     page_span,
     priority_markup,
     ref_markup,
+    short,
     styles,
 )
 
@@ -53,13 +54,18 @@ def study_hours(capitulos: list[Capitulo], total: float = 10) -> list[float]:
 
 
 def bold_keywords(text: str, keywords: list[str]) -> str:
-    """Escapa ``text`` y pone en negrita las palabras clave que aparecen en él."""
-    escaped = esc(text)
-    words = sorted({esc(k.strip()) for k in keywords if k.strip()}, key=len, reverse=True)
+    """Pone en negrita las palabras clave de ``text``, escapando cada trozo por separado."""
+    words = sorted({k.strip() for k in keywords if k.strip()}, key=len, reverse=True)
     if not words:
-        return escaped
+        return esc(text)
     pattern = re.compile("|".join(re.escape(w) for w in words), re.IGNORECASE)
-    return pattern.sub(lambda m: f"<b>{m.group(0)}</b>", escaped)
+    out: list[str] = []
+    last = 0
+    for m in pattern.finditer(text):
+        out += [esc(text[last : m.start()]), f"<b>{esc(m.group(0))}</b>"]
+        last = m.end()
+    out.append(esc(text[last:]))
+    return "".join(out)
 
 
 def _priorities(libro: Libro, pages: PageMap) -> list[Flowable]:
@@ -81,7 +87,7 @@ def _priorities(libro: Libro, pages: PageMap) -> list[Flowable]:
         key = chapter_key(i)
         rows.append(
             [
-                Paragraph(f'<a href="#{key}">{esc(cap.titulo)}</a>', st.table_cell),
+                Paragraph(f'<a href="#{key}">{esc(short(cap.titulo))}</a>', st.table_cell),
                 Paragraph(priority_markup(cap.prioridad, libro.idioma), st.table_cell),
                 Paragraph(page_span(*cap.paginas), st.table_cell),
                 Paragraph(f"{hours[i]:.1f}".replace(".", decimal), st.table_cell),
@@ -146,7 +152,7 @@ def _chapter(
     st, lb = styles(), labels(libro.idioma)
     key = chapter_key(index)
     story: list[Flowable] = [
-        Heading(esc(cap.titulo), st.h1, key=key, outline=cap.titulo),
+        Heading(esc(short(cap.titulo, 400)), st.h1, key=key, outline=short(cap.titulo, 120)),
         chapter_meta(cap, libro.idioma),
         Paragraph(lb["scheme"], st.h3),
     ]
@@ -185,10 +191,10 @@ def _checklist(libro: Libro) -> list[Flowable]:
         if not essentials:
             continue
         rows = [
-            [CheckBox(), Paragraph(f"{esc(c.titulo)}{ref_markup(c.paginas)}", st.table_cell)]
+            [CheckBox(), Paragraph(f"{esc(short(c.titulo))}{ref_markup(c.paginas)}", st.table_cell)]
             for c in essentials
         ]
-        table = Table(rows, colWidths=[7 * mm, CONTENT_WIDTH - 7 * mm])
+        table = Table(rows, colWidths=[7 * mm, CONTENT_WIDTH - 7 * mm], splitInRow=1)
         table.setStyle(
             TableStyle(
                 [
