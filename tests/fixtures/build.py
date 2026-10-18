@@ -118,6 +118,8 @@ def _book(
         a = 0
         while doc.page_count < target_end or a < len(apartados):
             apartado = apartados[a % len(apartados)]
+            if a >= len(apartados):
+                apartado = f"{apartado}: ampliación {chr(65 + a % 26)}{a // 26 or ''}"
             sub = f"{c + 1}.{a + 1}. {apartado}"
             w.block(sub, 14, bold=True, gap=10)
             if w.page is not None:

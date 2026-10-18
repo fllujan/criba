@@ -15,15 +15,21 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import Literal
 
-from criba.core.cost import estimate_tokens
-from criba.core.ingest import Book, Paragraph, TocEntry
+from criba.core.cost import CHARS_PER_TOKEN, estimate_tokens
+from criba.core.ingest import OCR_SIZE, Book, Paragraph, TocEntry, join_text
 
+# Súbelo al cambiar la limpieza o la fragmentación: forma parte de la clave de caché,
+# así los resultados de fragmentos de una versión anterior no se reutilizan por error.
+CHUNKER_VERSION = 1
 MAX_CHUNK_TOKENS = 12_000
 OVERLAP_TOKENS = 300
 BLOCK_PAGES = 20
 HEADING_RATIO = 1.3
 MAX_HEADING_CHARS = 120
 SIZE_TOLERANCE = 0.5
+MIN_HEADING_LETTERS = 3  # descarta letras capitulares («E») y numerales sueltos
+FRONT_MATTER_PAGES = 3  # títulos que solo aparecen aquí (portada, portadilla) no son capítulos
+_SENTENCE_CLOSERS = (".", "!", "?", ":", ";", "»", '"', ")", "”")
 PRELIMINARES = "Preliminares"
 _OVERLAP_HEADER = "[Contexto: final del fragmento anterior]\n…"
 _RESERVED_TOKENS = 40  # cabecera del solapamiento y marcas de página
@@ -117,7 +123,14 @@ def _from_toc(toc: list[TocEntry], page_count: int) -> list[Chapter] | None:
     level = next((lv for lv in levels if sum(1 for e in entries if e[0] == lv) >= 2), None)  # noqa: PLR2004
     if level is None:
         return None
-    chapters = _ranges([(t, pg) for lv, t, pg in entries if lv == level], page_count, "toc")
+    # Varios capítulos que empiezan en la misma página se unen en uno.
+    starts: dict[int, str] = {}
+    for lv, t, pg in entries:
+        if lv == level:
+            starts[pg] = f"{starts[pg]} · {t}" if pg in starts else t
+    if len(starts) < 2:  # noqa: PLR2004
+        return None
+    chapters = _ranges([(t, pg) for pg, t in starts.items()], page_count, "toc")
     _attach_sections(chapters, [Section(t, 2, pg) for lv, t, pg in entries if lv == level + 1])
     return chapters
 
@@ -130,7 +143,7 @@ def _heading(par: Paragraph, threshold: float) -> float | None:
         min(sizes) >= threshold
         and max(sizes) - min(sizes) <= SIZE_TOLERANCE
         and len(text) <= MAX_HEADING_CHARS
-        and any(c.isalpha() for c in text)
+        and sum(c.isalpha() for c in text) >= MIN_HEADING_LETTERS
     ):
         return round(sizes[0] * 2) / 2
     return None
@@ -142,6 +155,7 @@ def _from_fonts(book: Book) -> list[Chapter] | None:
         for pg in book.pages
         for par in pg.paragraphs
         for ln in par.lines
+        if ln.size > OCR_SIZE
         for _ in range(max(1, len(ln.text) // 10))
     ]
     if not weighted:
@@ -150,6 +164,8 @@ def _from_fonts(book: Book) -> list[Chapter] | None:
     found: list[tuple[float, str, int]] = []
     for page in book.pages:
         for par in page.paragraphs:
+            if any(ln.size <= OCR_SIZE for ln in par.lines):
+                continue
             size = _heading(par, threshold)
             if size is not None:
                 found.append((size, par.text, page.number))
@@ -157,7 +173,11 @@ def _from_fonts(book: Book) -> list[Chapter] | None:
     for size, _, page_no in found:
         pages_by_size[size].add(page_no)
     sizes = sorted(pages_by_size, reverse=True)
-    chapter_size = next((s for s in sizes if len(pages_by_size[s]) >= 2), None)  # noqa: PLR2004
+    front = max(FRONT_MATTER_PAGES, len(book.pages) * 3 // 100)
+    chapter_size = next(
+        (s for s in sizes if len(pages_by_size[s]) >= 2 and max(pages_by_size[s]) > front),  # noqa: PLR2004
+        None,
+    )
     if chapter_size is None:
         return None
     starts: list[tuple[str, int]] = []
@@ -167,7 +187,7 @@ def _from_fonts(book: Book) -> list[Chapter] | None:
             starts.append((text, page_no))
             seen_pages.add(page_no)
     chapters = _ranges(starts, len(book.pages), "fonts")
-    smaller = [s for s in sizes if s < chapter_size]
+    smaller = [s for s in sizes if s < chapter_size and max(pages_by_size[s]) > front]
     if smaller:
         _attach_sections(chapters, [Section(t, 2, pg) for s, t, pg in found if s == smaller[0]])
     return chapters
@@ -193,13 +213,28 @@ def detect_chapters(book: Book) -> list[Chapter]:
 
 
 def chapter_paragraphs(book: Book, chapter: Chapter) -> list[PagedParagraph]:
-    """Párrafos del capítulo con su página."""
-    return [
-        PagedParagraph(page.number, par.text)
-        for page in book.pages[chapter.start_page - 1 : chapter.end_page]
-        for par in page.paragraphs
-        if par.text.strip()
-    ]
+    """Párrafos del capítulo con su página.
+
+    Un párrafo que sigue en la página siguiente (no acaba en punto y el siguiente
+    empieza en minúscula) se une en uno solo, con la página donde empieza.
+    """
+    out: list[PagedParagraph] = []
+    for page in book.pages[chapter.start_page - 1 : chapter.end_page]:
+        texts = [t for t in (par.text.strip() for par in page.paragraphs) if t]
+        for i, text in enumerate(texts):
+            prev = out[-1] if out else None
+            continues = (
+                i == 0
+                and prev is not None
+                and prev.page < page.number
+                and not prev.text.endswith(_SENTENCE_CLOSERS)
+                and text[:1].islower()
+            )
+            if continues and prev is not None:
+                out[-1] = PagedParagraph(prev.page, join_text(prev.text, text))
+            else:
+                out.append(PagedParagraph(page.number, text))
+    return out
 
 
 # --- Fragmentación ----------------------------------------------------------------
@@ -224,6 +259,13 @@ def _split_words(text: str, budget: int) -> list[str]:
     pieces: list[str] = []
     current: list[str] = []
     for word in words:
+        if estimate_tokens(word) > budget:
+            if current:
+                pieces.append(" ".join(current))
+                current = []
+            step = int(budget * CHARS_PER_TOKEN)
+            pieces.extend(word[i : i + step] for i in range(0, len(word), step))
+            continue
         if current and estimate_tokens(" ".join([*current, word])) > budget:
             pieces.append(" ".join(current))
             current = []
@@ -272,6 +314,8 @@ def _tail(paragraphs: list[PagedParagraph], limit: int) -> str:
         while words and estimate_tokens("…" + " ".join(words)) > limit:
             words.pop(0)
         tail = " ".join(words)
+    if not tail:  # texto sin espacios: últimos caracteres
+        tail = sentences[-1][-max(1, int((limit - 1) * CHARS_PER_TOKEN)) :]
     return tail
 
 
