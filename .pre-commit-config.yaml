@@ -1,0 +1,25 @@
+# Usa las mismas versiones que uv.lock: los hooks llaman a `uv run`.
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        types: [python]
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check --fix
+        language: system
+        types: [python]
+      - id: mypy
+        name: mypy --strict
+        entry: uv run mypy
+        language: system
+        pass_filenames: false
+        types: [python]
+      - id: no-api-keys
+        name: sin claves de API
+        entry: "sk-ant-[A-Za-z0-9_-]{20,}"
+        language: pygrep
+        exclude: ^tests/test_logs\.py$

@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# Qt
+*.qm
+*.qmlc
+*.jsc
+
+# Secretos y datos locales
+.env
+*.key
+out/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Impeccable: binario del detector (se reinstala con npx impeccable install)
+.claude/skills/impeccable/scripts/bin/
