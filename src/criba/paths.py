@@ -53,5 +53,8 @@ def cache_db() -> Path:
 
 
 def default_output_dir() -> Path:
-    """Carpeta de salida por defecto: Documentos/Criba."""
+    """Carpeta de salida por defecto: Documentos/Criba (con ``CRIBA_HOME``, dentro de ella)."""
+    override = os.environ.get("CRIBA_HOME")
+    if override:  # tests y scripts: nunca escriben en los Documentos reales
+        return Path(override) / "out"
     return platformdirs.user_documents_path() / APP_NAME

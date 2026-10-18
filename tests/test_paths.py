@@ -22,6 +22,10 @@ def test_default_output_dir_is_documents_criba(monkeypatch) -> None:
     assert out.parent.name in {"Documents", "Documentos"} or out.parent.exists()
 
 
+def test_default_output_dir_follows_criba_home(app_dirs) -> None:
+    assert paths.default_output_dir() == app_dirs / "out"
+
+
 def test_platform_default_dirs_without_override(monkeypatch) -> None:
     monkeypatch.delenv("CRIBA_HOME", raising=False)
     assert "criba" in str(paths.data_dir(create=False)).lower()

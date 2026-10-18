@@ -1,3 +1,5 @@
+import math
+
 import pytest
 
 from criba.core import cost
@@ -92,7 +94,9 @@ def test_ocr_batches_in_estimate() -> None:
         ocr_batches=[(5, False), (2, True)],
     )
     assert est.calls == 2 and est.cached_calls == 1
-    assert est.usage.input == 500 + 5 * cost.OCR_INPUT_PER_PAGE
+    assert est.usage.input == math.ceil(
+        (500 + 5 * cost.OCR_INPUT_PER_PAGE) * cost.INPUT_TOKEN_FACTOR
+    )
 
 
 def test_empty_chapters_skipped() -> None:

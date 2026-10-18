@@ -9,7 +9,7 @@ def test_defaults_when_missing(app_dirs) -> None:
     s = settings.load()
     assert s.model == "claude-sonnet-5-5"
     assert s.output_dir is None and s.language is None
-    assert s.output_path.name == "Criba"
+    assert s.output_path == app_dirs / "out"  # con CRIBA_HOME, nunca en los Documentos reales
 
 
 def test_save_and_load_roundtrip(app_dirs, tmp_path) -> None:

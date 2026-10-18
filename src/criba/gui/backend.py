@@ -821,7 +821,14 @@ class Backend(QObject):
         self._set_notice("")
         self.progressChanged.emit()
         self._set_screen("processing")
-        log.info("Procesando «%s» con %s", options.asignatura, prep.model)
+        log.info(
+            "Procesando «%s» con %s; estimado %.2f $ en %d llamadas (%.0f s)",
+            options.asignatura,
+            prep.model,
+            prep.estimate.usd,
+            prep.estimate.calls,
+            prep.estimate.seconds,
+        )
 
         def job(report: Report) -> object:
             fresh = replan(prep, options, cache)
@@ -837,6 +844,12 @@ class Backend(QObject):
 
     def _run_done(self, result: RunResult) -> None:
         self._cancel = None
+        log.info(
+            "Listo: coste real %.2f $ en %d llamadas (%d desde la caché)",
+            result.cost_usd,
+            result.calls,
+            result.cached_calls,
+        )
         self._done = Done(
             result.summary_pdf, result.outline_pdf, result.cost_usd, result.failed_pages
         )

@@ -35,12 +35,15 @@ MAP_OUTPUT_OVERHEAD = 700  # preguntas, paja y estructura JSON por fragmento
 REDUCE_OUTPUT_RATIO = 0.8  # la síntesis condensa lo que recibe
 BOOK_INPUT_PER_CHAPTER = 450
 BOOK_OUTPUT = 1_500
-THINKING_FACTOR = 1.4  # razonamiento adaptativo (esfuerzo medio), se factura como salida
+# Calibrado con un libro real (314 págs., nivel completo, oct. 2026): la entrada real fue
+# ~1,3 veces la estimada (el español gasta más tokens por carácter) y la salida ~1,25.
+INPUT_TOKEN_FACTOR = 1.3  # solo para el coste; el troceo del libro no cambia
+THINKING_FACTOR = 1.75  # razonamiento adaptativo (esfuerzo medio), se factura como salida
 OCR_INPUT_PER_PAGE = 2_400  # imagen de A4 a 150 ppp
 OCR_OUTPUT_PER_PAGE = 700
 OCR_BATCH = 5
 # Tiempo: la salida se genera a ~OUTPUT_TOKENS_PER_SECOND por llamada, con 4 llamadas a la vez.
-OUTPUT_TOKENS_PER_SECOND = 80
+OUTPUT_TOKENS_PER_SECOND = 170  # medido: 265.000 tokens en 6,6 min, 4 a la vez
 CALL_LATENCY = 3.0  # segundos de cada llamada antes de empezar a responder
 PARALLEL_CALLS = 4
 LEVEL_PERCENT: dict[str, int] = {"esencial": 10, "normal": 15, "completo": 20}
@@ -170,7 +173,7 @@ def estimate(
             est.cached_calls += 1
             return
         tokens = math.ceil(out * THINKING_FACTOR)
-        est.usage += Usage(input=inp, output=tokens)
+        est.usage += Usage(input=math.ceil(inp * INPUT_TOKEN_FACTOR), output=tokens)
         work[stage][0] += 1
         work[stage][1] += tokens
 
