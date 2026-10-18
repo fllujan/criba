@@ -275,3 +275,48 @@ def test_api_key_never_written_to_disk(fx, tmp_path, cache, app_dirs, monkeypatc
     for path in [*tmp_path.rglob("*"), *app_dirs.rglob("*")]:
         if path.is_file():
             assert key.encode() not in path.read_bytes(), path
+
+
+def test_replan_changes_selection_without_rereading(fx, tmp_path, cache, monkeypatch) -> None:
+    """La interfaz recalcula la estimación al marcar capítulos sin volver a leer el PDF."""
+    opts = _opts(tmp_path)
+    prep = pipeline.prepare(fx.con_indice, opts, cache, MODEL)
+    full = prep.estimate.usd
+
+    def no_read(*_a, **_k):
+        raise AssertionError("no debe releer el libro")
+
+    monkeypatch.setattr(pipeline.ingest, "open_book", no_read)
+    fewer = pipeline.replan(prep, _opts(tmp_path, chapters=(1,)), cache)
+    assert [c.title for c in fewer.selected] == ["Capítulo 1. La célula"]
+    assert 0 < fewer.estimate.usd < full
+    assert fewer.book is prep.book
+    detailed = pipeline.replan(prep, _opts(tmp_path, nivel="completo"), cache)
+    assert detailed.study.nivel == "completo"
+    assert detailed.estimate.usd > full
+
+
+def test_replan_then_run_matches_fresh_prepare(fx, tmp_path, cache) -> None:
+    opts = _opts(tmp_path, chapters=(1, 3))
+    prep = pipeline.replan(
+        pipeline.prepare(fx.con_indice, _opts(tmp_path), cache, MODEL), opts, cache
+    )
+    result = pipeline.run(prep, opts, FakeLLMClient(model=MODEL), cache)
+    assert len(result.libro.capitulos) == 2
+
+
+def test_overall_fraction_spans_stages_in_order() -> None:
+    p = pipeline.Progress
+    seq = [
+        p(Stage.READING, 5, 10),
+        p(Stage.OCR, 1, 2),
+        p(Stage.ANALYZING, 0, 10),
+        p(Stage.ANALYZING, 10, 10),
+        p(Stage.SYNTHESIZING, 3, 4),
+        p(Stage.RENDERING, 0, 1),
+        p(Stage.DONE, 1, 1),
+    ]
+    values = [pipeline.overall_fraction(p) for p in seq]
+    assert values == sorted(values)
+    assert values[0] == 0.0
+    assert values[-1] == 1.0

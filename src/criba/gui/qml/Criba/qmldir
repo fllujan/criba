@@ -1,0 +1,19 @@
+module Criba
+singleton Theme 1.0 Theme.qml
+Paper 1.0 Paper.qml
+Mark 1.0 Mark.qml
+Ring 1.0 Ring.qml
+CoverBar 1.0 CoverBar.qml
+PrimaryButton 1.0 PrimaryButton.qml
+QuietButton 1.0 QuietButton.qml
+CoverButton 1.0 CoverButton.qml
+LinkButton 1.0 LinkButton.qml
+Segmented 1.0 Segmented.qml
+Field 1.0 Field.qml
+FocusRing 1.0 FocusRing.qml
+Notice 1.0 Notice.qml
+SectionHead 1.0 SectionHead.qml
+ConfirmPopup 1.0 ConfirmPopup.qml
+Body 1.0 Body.qml
+ChapterRow 1.0 ChapterRow.qml
+InkBar 1.0 InkBar.qml

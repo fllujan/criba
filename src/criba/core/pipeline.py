@@ -76,6 +76,22 @@ class Progress:
 
 OnProgress = Callable[[Progress], None]
 
+# Tramo de la barra global que ocupa cada etapa (leer el libro va antes de procesar).
+STAGE_SPANS: dict[Stage, tuple[float, float]] = {
+    Stage.READING: (0.0, 0.0),
+    Stage.OCR: (0.0, 0.1),
+    Stage.ANALYZING: (0.1, 0.8),
+    Stage.SYNTHESIZING: (0.8, 0.95),
+    Stage.RENDERING: (0.95, 1.0),
+    Stage.DONE: (1.0, 1.0),
+}
+
+
+def overall_fraction(progress: Progress) -> float:
+    """Avance total del procesado entre 0 y 1 (para una sola barra)."""
+    lo, hi = STAGE_SPANS[progress.stage]
+    return lo + (hi - lo) * min(progress.fraction, 1.0)
+
 
 class CancelToken:
     """Permite cancelar desde otro hilo (botón Cancelar)."""
@@ -257,24 +273,34 @@ def prepare(
 
     book = ingest.open_book(pdf, on_page=on_page)
     chapters = structure.detect_chapters(book)
+    study = StudyOptions(options.asignatura, options.nivel, options.tipo_examen, "es")
+    prep = Prepared(book, chapters, [], "es", study, model, [], Estimate(model=model))
+    return replan(prep, options, cache)
+
+
+def replan(prep: Prepared, options: Options, cache: Cache) -> Prepared:
+    """Recalcula selección, OCR pendiente y estimación con otras opciones (sin releer el PDF)."""
+    book = prep.book
     language = options.idioma or ingest.detect_language(book)
     study = StudyOptions(options.asignatura, options.nivel, options.tipo_examen, language)
-    prep = Prepared(book, chapters, [], language, study, model, [], Estimate(model=model))
-    prep.selected = _select(chapters, options)
+    new = Prepared(
+        book, prep.chapters, [], language, study, prep.model, [], Estimate(model=prep.model)
+    )
+    new.selected = _select(prep.chapters, options)
 
     # OCR: lo que ya está en caché se aplica ahora (gratis) y no se vuelve a pedir.
-    selected_pages = {p for c in prep.selected for p in range(c.start_page, c.end_page + 1)}
+    selected_pages = {p for c in new.selected for p in range(c.start_page, c.end_page + 1)}
     scanned = [p for p in book.scanned_pages if p in selected_pages]
     missing: list[int] = []
     for page in scanned:
-        hit = cache.get(_ocr_key(prep, page))
+        hit = cache.get(_ocr_key(new, page))
         if hit:
             _apply_ocr(book, [schemas.OcrPagina.model_validate_json(hit[0])], {page})
         else:
             missing.append(page)
-    prep.ocr_pending = ocr.batches(missing)
-    prep.estimate = _estimate(prep, cache)
-    return prep
+    new.ocr_pending = ocr.batches(missing)
+    new.estimate = _estimate(new, cache)
+    return new
 
 
 def _cached[T: BaseModel](

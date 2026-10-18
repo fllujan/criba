@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Criba · Edición con raíl</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1C1B19;--rub:#6B8E23;--rubd:#4E6A17;--bone:#F2EEE4;--serif:"Source Serif 4",Georgia,serif;--sans:Inter,system-ui,sans-serif}
+*{box-sizing:border-box;border-radius:0}
+html,body{margin:0;width:1440px;height:900px;overflow:hidden}
+body{background:var(--bone);color:var(--ink);font:400 14px/1.45 var(--sans);font-variant-numeric:tabular-nums lining-nums}
+::selection{background:var(--rub);color:var(--bone)}
+a{color:var(--rubd);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+a:hover{text-decoration-thickness:2px}
+:focus-visible{outline:1px solid var(--rubd);outline-offset:3px}
+.sc{font-family:var(--serif);font-variant-caps:all-small-caps;letter-spacing:.07em;font-size:15px;font-weight:600}
+/* barra */
+header{height:56px;display:flex;align-items:center;padding:0 40px;border-bottom:1px solid var(--ink);gap:48px}
+header .brand{font-size:20px;letter-spacing:.1em}
+.steps{display:flex;gap:28px;margin:0;padding:0;list-style:none;font-size:13px}
+.steps li{display:flex;gap:8px;align-items:baseline;padding:4px 0}
+.steps b{font:600 12px/1 var(--sans);width:20px;height:20px;display:inline grid;place-items:center;border:1px solid var(--ink)}
+.steps .on b{background:var(--ink);color:var(--bone)}
+.steps .on{border-bottom:1px solid var(--ink)}
+.nav{margin-left:auto;display:flex;gap:28px;align-items:center}
+.nav button{all:unset;cursor:pointer;display:flex;gap:8px;align-items:center;font-size:13px;padding:6px 0}
+.nav button:hover{text-decoration:underline;text-underline-offset:3px}
+/* página */
+main{display:grid;grid-template-columns:1fr 440px;height:844px}
+.text{padding:48px 56px 0 72px}
+.text h1{font:600 30px/1.15 var(--serif);margin:0 0 6px;letter-spacing:-.01em}
+.lede{margin:0 0 28px;font:400 15px/1.5 var(--serif);max-width:62ch}
+.run{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--ink);padding-bottom:8px}
+.run span:last-child{font-size:13px}
+/* raíl central */
+.rail{display:grid;grid-template-columns:1fr 1px 1fr;border-bottom:1px solid var(--ink)}
+.rail>.spine{background:var(--ink)}
+.col{display:flex;flex-direction:column}
+.ch{display:grid;align-items:center;min-height:62px;cursor:pointer;border-top:1px solid var(--ink)}
+.col .ch:first-child{border-top:0}
+.l .ch{grid-template-columns:1fr 92px 30px;text-align:right}
+.r .ch{grid-template-columns:30px 92px 1fr}
+.ch input{position:absolute;opacity:0;width:1px;height:1px}
+.t{font:400 16px/1.3 var(--serif);padding:10px 20px}
+.t i{font-style:normal;font-weight:600;margin-right:6px}
+.k{font:500 13px/1 var(--sans);color:var(--rubd);white-space:nowrap}
+.l .k{text-align:right;padding-right:10px}.r .k{padding-left:10px}
+.d{width:12px;height:12px;border:1px solid var(--rub);background:var(--rub);justify-self:center}
+.ch:has(input:not(:checked)) .d{background:transparent;border-color:var(--ink)}
+.ch:has(input:not(:checked)) .t{text-decoration:line-through;text-decoration-thickness:1px}
+.ch:hover .t{text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1px}
+.ch:has(input:not(:checked)):hover .t{text-decoration:line-through}
+.ch:has(input:focus-visible) .d{outline:1px solid var(--rubd);outline-offset:3px}
+.more{display:grid;grid-template-columns:30px 92px 1fr;align-items:center;min-height:62px;border-top:1px solid var(--ink)}
+.more .k{color:var(--ink)}
+.more a{padding:0 20px;font-size:14px}
+.foot{display:flex;justify-content:space-between;padding-top:14px;font-size:13px}
+.key{display:flex;gap:22px;align-items:center}
+.key span{display:flex;gap:8px;align-items:center}
+.key .d{display:inline-block}.key .h{background:transparent;border-color:var(--ink)}
+/* margen de anotación */
+aside{border-left:1px solid var(--ink);padding:40px 48px 0 40px;display:flex;flex-direction:column}
+.f{padding:0 0 22px}
+.f label,.f .lab{display:block;margin-bottom:6px}
+.f input[type=text]{all:unset;display:block;width:100%;font:400 18px/1.3 var(--serif);padding:4px 0 7px;border-bottom:1px solid var(--ink)}
+.f input[type=text]:focus{border-bottom-color:var(--rubd);box-shadow:0 1px 0 var(--rubd)}
+.file{font-size:13px;line-height:1.55;border-top:1px solid var(--ink);padding-top:12px}
+.file strong{font-weight:500;display:block;font-size:14px}
+.file .row{display:flex;justify-content:space-between;align-items:baseline}
+.btn2{all:unset;cursor:pointer;font:500 13px var(--sans);padding:5px 12px;border:1px solid var(--ink)}
+.btn2:hover{background:var(--ink);color:var(--bone)}
+.seg{display:grid;border:1px solid var(--ink)}
+.seg.c3{grid-template-columns:repeat(3,1fr)}
+.seg label{margin:0;cursor:pointer;text-align:center;padding:8px 4px;font-size:13px;font-weight:500;border-left:1px solid var(--ink)}
+.seg label:first-of-type{border-left:0}
+.seg label small{display:block;font-weight:400;font-size:12px}
+.seg input{position:absolute;opacity:0;width:1px;height:1px}
+.seg label:hover{text-decoration:underline;text-underline-offset:3px}
+.seg label:has(input:checked){background:var(--rubd);color:var(--bone)}
+.seg label:has(input:focus-visible){outline:1px solid var(--rubd);outline-offset:2px}
+.est{border-top:1px solid var(--ink);padding-top:14px;margin-top:2px}
+.cost{font:600 32px/1 var(--serif);letter-spacing:-.01em;display:flex;align-items:baseline;gap:12px;margin:6px 0 8px}
+.cost small{font:400 15px var(--sans);letter-spacing:0}
+.est p{margin:0 0 4px;font-size:13px}
+.est em{font-family:var(--serif);font-size:15px}
+.go{all:unset;cursor:pointer;margin-top:22px;display:block;text-align:center;background:var(--rubd);color:var(--bone);font:600 15px var(--sans);padding:15px 0;border:1px solid var(--rubd)}
+.go:hover{background:var(--ink);border-color:var(--ink)}
+.go:focus-visible{outline:1px solid var(--rubd);outline-offset:3px}
+</style>
+</head>
+<body>
+<header>
+  <span class="sc brand">Criba</span>
+  <ol class="steps" aria-label="Pasos">
+    <li class="on" aria-current="step"><b>1</b>Libro</li>
+    <li><b>2</b>Procesar</li>
+    <li><b>3</b>Listo</li>
+  </ol>
+  <nav class="nav">
+    <button type="button">Historial</button>
+    <button type="button"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#1C1B19" stroke-width="1" aria-hidden="true"><circle cx="8" cy="8" r="2.4"/><path d="M8 1.2v2M8 12.8v2M1.2 8h2M12.8 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M3.2 12.8l1.4-1.4M11.4 4.6l1.4-1.4"/><circle cx="8" cy="8" r="4.6"/></svg>Ajustes</button>
+  </nav>
+</header>
+<main>
+  <section class="text">
+    <h1>Qué capítulos entran en el resumen</h1>
+    <p class="lede">Cada capítulo cuelga de sus páginas en el libro. Toca uno para dejarlo fuera; queda tachado y no se procesa.</p>
+    <div class="run"><span class="sc">Capítulos detectados</span><span>13 de 14 incluidos · 305 páginas</span></div>
+    <div class="rail">
+      <div class="col l">
+        <label class="ch"><input type="checkbox"><span class="t">Preliminares</span><span class="k">pp. 1–7</span><span class="d"></span></label>
+        <label class="ch"><input type="checkbox" checked><span class="t"><i>1.</i>La organización de los seres vivos</span><span class="k">pp. 8–27</span><span class="d"></span></label>
+        <label class="ch"><input type="checkbox" checked><span class="t"><i>2.</i>La célula, unidad de vida</span><span class="k">pp. 28–51</span><span class="d"></span></label>
+        <label class="ch"><input type="checkbox" checked><span class="t"><i>3.</i>Los tejidos animales y vegetales</span><span class="k">pp. 52–71</span><span class="d"></span></label>
+        <label class="ch"><input type="checkbox" checked><span class="t"><i>4.</i>La clasificación de los seres vivos</span><span class="k">pp. 72–93</span><span class="d"></span></label>
+        <label class="ch"><input type="checkbox" checked><span class="t"><i>5.</i>Las plantas: nutrición</span><span class="k">pp. 94–119</span><span class="d"></span></label>
+      </div>
+      <div class="spine"></div>
+      <div class="col r">
+        <label class="ch"><input type="checkbox" checked><span class="d"></span><span class="k">pp. 120–143</span><span class="t"><i>6.</i>Las plantas: relación y reproducción</span></label>
+        <label class="ch"><input type="checkbox" checked><span class="d"></span><span class="k">pp. 144–171</span><span class="t"><i>7.</i>Los animales: nutrición</span></label>
+        <label class="ch"><input type="checkbox" checked><span class="d"></span><span class="k">pp. 172–199</span><span class="t"><i>8.</i>Los animales: relación</span></label>
+        <label class="ch"><input type="checkbox" checked><span class="d"></span><span class="k">pp. 200–223</span><span class="t"><i>9.</i>Los animales: reproducción</span></label>
+        <label class="ch"><input type="checkbox" checked><span class="d"></span><span class="k">pp. 224–251</span><span class="t"><i>10.</i>Estructura de la Tierra</span></label>
+        <div class="more"><span></span><span class="k">pp. 252–312</span><a href="#">Ver los 3 capítulos restantes</a></div>
+      </div>
+    </div>
+    <div class="foot">
+      <a href="#">Elegir un rango de páginas</a>
+      <div class="key"><span><i class="d"></i>Se procesa</span><span><i class="d h"></i>Queda fuera</span></div>
+    </div>
+  </section>
+  <aside>
+    <div class="f">
+      <label class="sc" for="asig">Asignatura</label>
+      <input type="text" id="asig" value="Biología y Geología 1.º Bachillerato">
+    </div>
+    <div class="f file">
+      <div class="row"><span class="sc">Libro</span><button class="btn2" type="button">Cambiar libro</button></div>
+      <strong>Biologia_Geologia_1Bach.pdf</strong>
+      312 páginas · 4 escaneadas (se leerán con la IA)
+    </div>
+    <div class="f">
+      <span class="sc lab">Nivel de detalle</span>
+      <div class="seg c3" role="radiogroup" aria-label="Nivel de detalle">
+        <label><input type="radio" name="nv">Esencial<small>≈10 %</small></label>
+        <label><input type="radio" name="nv" checked>Normal<small>≈15 %</small></label>
+        <label><input type="radio" name="nv">Completo<small>≈20 %</small></label>
+      </div>
+    </div>
+    <div class="f">
+      <span class="sc lab">Tipo de examen</span>
+      <div class="seg c3" role="radiogroup" aria-label="Tipo de examen">
+        <label><input type="radio" name="tx">Test</label>
+        <label><input type="radio" name="tx">Desarrollo</label>
+        <label><input type="radio" name="tx" checked>Mixto</label>
+      </div>
+    </div>
+    <div class="f"><a href="#">Añadir exámenes antiguos (opcional)</a></div>
+    <div class="est">
+      <span class="sc">Estimación</span>
+      <div class="cost">≈ 2,10 €<small>2,28 $</small></div>
+      <p>305 páginas · unas 96 llamadas a la IA · unos 12 minutos</p>
+      <p><em>Solo pagas lo que proceses. Si cancelas, lo hecho se guarda.</em></p>
+    </div>
+    <button class="go" type="button">Generar resumen y esquema</button>
+  </aside>
+</main>
+</body>
+</html>

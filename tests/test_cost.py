@@ -104,3 +104,21 @@ def test_empty_chapters_skipped() -> None:
 
 def test_default_model_is_priced() -> None:
     assert cost.DEFAULT_MODEL in cost.PRICES
+
+
+def test_time_estimate() -> None:
+    """RF-10 / RNF-01: un libro de 300 páginas, en menos de 15 minutos."""
+    pages_per_chunk, chunks = 10, 30
+    chapters = [ChapterPlan([ChunkPlan(9_000, pages_per_chunk)] * 3) for _ in range(chunks // 3)]
+    est = estimate(
+        model="claude-sonnet-5-5", level="normal", system_tokens=1_500, chapters=chapters
+    )
+    assert 60 < est.seconds < 15 * 60
+    cached = estimate(
+        model="claude-sonnet-5-5",
+        level="normal",
+        system_tokens=1_500,
+        chapters=[ChapterPlan([ChunkPlan(9_000, 10, cached=True)], cached=True)],
+        book_cached=True,
+    )
+    assert cached.seconds == 0

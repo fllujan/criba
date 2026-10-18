@@ -39,6 +39,10 @@ THINKING_FACTOR = 1.4  # razonamiento adaptativo (esfuerzo medio), se factura co
 OCR_INPUT_PER_PAGE = 2_400  # imagen de A4 a 150 ppp
 OCR_OUTPUT_PER_PAGE = 700
 OCR_BATCH = 5
+# Tiempo: la salida se genera a ~OUTPUT_TOKENS_PER_SECOND por llamada, con 4 llamadas a la vez.
+OUTPUT_TOKENS_PER_SECOND = 80
+CALL_LATENCY = 3.0  # segundos de cada llamada antes de empezar a responder
+PARALLEL_CALLS = 4
 LEVEL_PERCENT: dict[str, int] = {"esencial": 10, "normal": 15, "completo": 20}
 
 
@@ -119,6 +123,15 @@ class Estimate:
     def eur(self) -> float:
         """Coste estimado en euros."""
         return to_eur(self.usd)
+
+    @property
+    def seconds(self) -> float:
+        """Tiempo estimado de las llamadas que faltan (lo que está en caché es instantáneo)."""
+        pending = self.calls - self.cached_calls
+        if not pending:
+            return 0.0
+        busy = self.usage.output / OUTPUT_TOKENS_PER_SECOND + pending * CALL_LATENCY
+        return busy / PARALLEL_CALLS
 
 
 def estimate(

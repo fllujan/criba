@@ -4,9 +4,9 @@
 
 ## Platform
 
-desktop
+web
 
-App de escritorio nativa para macOS 12+ (Apple Silicon e Intel) y Windows 10/11 x64. Tiene un único lenguaje visual propio de Criba, idéntico en los dos sistemas (decisión del dueño), y respeta las convenciones de cada plataforma: ⌘ en Mac y Ctrl en Windows, modo oscuro del sistema, tamaños de letra del sistema, arrastrar y soltar archivos, y abrir archivos y carpetas con el gestor nativo.
+(Impeccable solo admite web, ios, android o adaptive; Criba dibuja su propio lenguaje visual como una web, aunque es una app de escritorio en Qt Quick, así que el valor correcto es `web`.) App de escritorio nativa para macOS 12+ (Apple Silicon e Intel) y Windows 10/11 x64. Tiene un único lenguaje visual propio de Criba, idéntico en los dos sistemas (decisión del dueño), y respeta las convenciones de cada plataforma: ⌘ en Mac y Ctrl en Windows, modo oscuro del sistema, tamaños de letra del sistema, arrastrar y soltar archivos, y abrir archivos y carpetas con el gestor nativo.
 
 ## Stack
 

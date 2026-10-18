@@ -1,18 +1,24 @@
-"""Ventana principal: crea el motor QML y arranca la app."""
+"""Ventana principal: crea el motor QML con el backend y arranca la app."""
 
 import logging
+import os
 from collections.abc import Sequence
 from pathlib import Path
 
 from PySide6.QtCore import QLocale, QTranslator, QUrl
-from PySide6.QtGui import QGuiApplication
+from PySide6.QtGui import QFont, QFontDatabase, QGuiApplication, QIcon
 from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtQuickControls2 import QQuickStyle
 
-from criba import __version__, logs
+from criba import __version__, logs, paths
+from criba.core.cache import Cache
+from criba.gui.backend import Backend
+from criba.gui.thumbs import ThumbnailProvider
 
 QML_DIR = Path(__file__).parent / "qml"
-I18N_DIR = Path(__file__).parent.parent / "assets" / "i18n"
+ASSETS = Path(__file__).parent.parent / "assets"
+I18N_DIR = ASSETS / "i18n"
+FONTS_DIR = ASSETS / "fonts"
 
 log = logging.getLogger(__name__)
 
@@ -26,10 +32,26 @@ def _install_translator(app: QGuiApplication) -> QTranslator | None:
     return None
 
 
-def create_engine() -> QQmlApplicationEngine:
+def load_fonts(app: QGuiApplication) -> None:
+    """Registra Inter y Source Serif 4 (las mismas que los PDF, iguales en Mac y Windows)."""
+    for font in sorted(FONTS_DIR.glob("*.ttf")):
+        # Desde los datos: en macOS registrar por ruta falla en algunos entornos.
+        if QFontDatabase.addApplicationFontFromData(font.read_bytes()) < 0:
+            log.warning("No se ha podido cargar la fuente %s", font.name)
+    base = QFont(app.font())  # conserva el tamaño de letra del sistema
+    base.setFamily("Inter")
+    app.setFont(base)
+
+
+def create_engine(backend: Backend) -> QQmlApplicationEngine:
     """Crea el motor QML y carga ``Main.qml``. Requiere una QGuiApplication."""
     engine = QQmlApplicationEngine()
     engine.addImportPath(str(QML_DIR))
+    engine.addImageProvider("thumb", ThumbnailProvider())
+    theme = os.environ.get("CRIBA_THEME", "")  # desarrollo: forzar "light" o "dark"
+    engine.setInitialProperties(
+        {"backend": backend, "themeOverride": theme if theme in {"light", "dark"} else ""}
+    )
     engine.load(QUrl.fromLocalFile(str(QML_DIR / "Main.qml")))
     return engine
 
@@ -43,12 +65,19 @@ def run(argv: Sequence[str]) -> int:
     app.setApplicationName("Criba")
     app.setOrganizationName("Criba")
     app.setApplicationVersion(__version__)
+    icon = ASSETS / "icons" / "criba.png"
+    if icon.exists():
+        app.setWindowIcon(QIcon(str(icon)))
     _install_translator(app)
-    engine = create_engine()
-    if not engine.rootObjects():
-        log.error("No se ha podido cargar la interfaz QML")
-        return 1
-    code = app.exec()
-    del engine
+    load_fonts(app)
+    with Cache(paths.cache_db()) as cache:
+        backend = Backend(cache)
+        engine = create_engine(backend)
+        if not engine.rootObjects():
+            log.error("No se ha podido cargar la interfaz QML")
+            return 1
+        code = app.exec()
+        backend.shutdown()
+        del engine
     logs.shutdown()
     return code

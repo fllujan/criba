@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Criba · Nuevo libro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FFFFFF;--side:#F4F5F2;--ink:#1C1F1A;--ink2:#565C52;--ink3:#6E746A;--line:#E3E5DF;--line2:#D3D6CE;--hover:#EAECE6;--acc:#6B8E23;--accD:#4E6A17;--accT:#EEF3E4;--sh:0 1px 2px rgba(28,31,26,.06),0 2px 8px rgba(28,31,26,.05)}
+*{box-sizing:border-box}
+html,body{margin:0;width:1440px;height:900px;overflow:hidden}
+body{background:var(--bg);color:var(--ink);font:400 14px/1.45 Inter,sans-serif;font-feature-settings:"cv11","ss01";-webkit-font-smoothing:antialiased;display:grid;grid-template-columns:220px 1fr 340px}
+::selection{background:#D5E2BC;color:var(--ink)}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:6px}
+svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none}
+button{font:inherit;color:inherit;cursor:pointer}
+.num{font-variant-numeric:tabular-nums}
+/* Sidebar */
+aside.nav{background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:20px 12px 16px}
+.mark{display:flex;align-items:center;gap:9px;padding:0 10px 22px;font-weight:700;font-size:17px;letter-spacing:-.02em}
+.mark i{width:22px;height:22px;border-radius:6px;background:var(--accD);display:grid;place-items:center;color:#fff}
+.mark i svg{width:13px;height:13px;stroke-width:2}
+.item{display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;border-radius:6px;color:var(--ink2);font-weight:500;font-size:13.5px;text-decoration:none}
+.item:hover{background:var(--hover);color:var(--ink)}
+.item.on{background:#fff;color:var(--ink);box-shadow:0 0 0 1px var(--line),0 1px 2px rgba(28,31,26,.05)}
+.item.on svg{color:var(--accD)}
+.nav .spacer{flex:1}
+/* Main */
+main{display:flex;flex-direction:column;min-width:0;height:900px}
+header{height:60px;flex:none;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 40px;gap:6px;font-size:13px;color:var(--ink3)}
+.step{display:flex;align-items:center;gap:8px;font-weight:500}
+.step b{width:20px;height:20px;border-radius:50%;border:1px solid var(--line2);display:grid;place-items:center;font-size:11px;font-weight:600}
+.step.on{color:var(--ink)}.step.on b{background:var(--accD);border-color:var(--accD);color:#fff}
+.sep{width:28px;height:1px;background:var(--line2);margin:0 6px}
+.body{flex:1;min-height:0;display:flex;flex-direction:column;padding:32px 40px 28px;gap:24px}
+h1{margin:0;font-size:24px;line-height:1.2;font-weight:650;letter-spacing:-.022em}
+.lede{margin:6px 0 0;color:var(--ink2)}
+.file{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:8px;box-shadow:var(--sh)}
+.doc{width:36px;height:44px;border-radius:4px;border:1px solid var(--line2);background:var(--side);display:grid;place-items:end center;padding-bottom:5px;font-size:9px;font-weight:700;color:var(--accD);letter-spacing:.04em}
+.file .n{font-weight:600}.file .m{color:var(--ink2);font-size:13px;margin-top:2px}
+.file .m span{color:var(--line2);margin:0 6px}
+.btn2{margin-left:auto;height:32px;padding:0 14px;border-radius:6px;border:1px solid var(--line2);background:#fff;font-weight:500;font-size:13px;box-shadow:0 1px 1px rgba(28,31,26,.04)}
+.btn2:hover{background:var(--side)}
+label.lbl,.lbl{display:block;font-size:13px;font-weight:600;margin-bottom:8px}
+.lbl small{font-weight:400;color:var(--ink3);margin-left:6px}
+.input{width:100%;height:38px;border:1px solid var(--line2);border-radius:6px;padding:0 12px;font:inherit;color:var(--ink);background:#fff}
+.input:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px rgba(107,142,35,.18)}
+.chap{flex:1;min-height:0;display:flex;flex-direction:column}
+.chap .hd{display:flex;align-items:baseline}
+.list{flex:1;min-height:0;overflow-y:auto;border:1px solid var(--line);border-radius:8px;margin:0;padding:4px;list-style:none;scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
+.list li label{display:flex;align-items:center;gap:12px;height:36px;padding:0 12px;border-radius:6px;cursor:pointer}
+.list li label:hover{background:var(--side)}
+.list .pp{margin-left:auto;color:var(--ink3);font-size:13px}
+.list li.off span:first-of-type{color:var(--ink3)}
+input[type=checkbox]{appearance:none;margin:0;width:16px;height:16px;border:1px solid var(--line2);border-radius:4px;background:#fff;display:grid;place-items:center;flex:none}
+input[type=checkbox]:checked{background:var(--accD);border-color:var(--accD)}
+input[type=checkbox]:checked::after{content:"";width:8px;height:4px;border:solid #fff;border-width:0 0 1.75px 1.75px;transform:translate(0,-1px) rotate(-45deg)}
+.foot{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:13px;color:var(--ink2)}
+a.link{color:var(--accD);font-weight:500;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+a.link:hover{text-decoration:underline;text-underline-offset:3px}
+/* Summary */
+aside.sum{border-left:1px solid var(--line);background:var(--bg);display:flex;flex-direction:column;padding:28px 24px 24px;gap:22px}
+.sum h2{margin:0;font-size:15px;font-weight:650;letter-spacing:-.01em}
+.seg{display:flex;padding:3px;background:var(--side);border:1px solid var(--line);border-radius:8px}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label{flex:1;text-align:center;padding:6px 4px;border-radius:6px;font-size:13px;font-weight:500;color:var(--ink2);cursor:pointer;line-height:1.25}
+.seg label small{display:block;font-size:11.5px;font-weight:400;color:var(--ink3)}
+.seg input:checked+label{background:#fff;color:var(--ink);box-shadow:0 0 0 1px var(--line),0 1px 3px rgba(28,31,26,.08)}
+.seg input:focus-visible+label{outline:2px solid var(--acc);outline-offset:1px}
+.est{margin-top:auto;border-top:1px solid var(--line);padding-top:20px}
+.cost{font-size:28px;font-weight:650;letter-spacing:-.025em;line-height:1.1}
+.cost span{font-size:15px;font-weight:500;color:var(--ink3);letter-spacing:0;margin-left:6px}
+.facts{margin:10px 0 0;padding:0;list-style:none;color:var(--ink2);font-size:13px;display:grid;gap:4px}
+.facts li{display:flex;justify-content:space-between}.facts b{color:var(--ink);font-weight:500}
+.note{margin:14px 0 0;padding:10px 12px;border-radius:6px;background:var(--accT);color:#3D5412;font-size:13px;display:flex;gap:8px}
+.note svg{margin-top:2px}
+.primary{margin-top:16px;width:100%;height:44px;border:0;border-radius:8px;background:var(--accD);color:#fff;font-weight:600;font-size:14px;box-shadow:0 1px 2px rgba(28,31,26,.12),inset 0 1px 0 rgba(255,255,255,.08)}
+.primary:hover{background:#445D14}
+.primary:active{background:#3B5111}
+</style></head><body>
+<aside class="nav">
+  <div class="mark"><i><svg viewBox="0 0 16 16"><path d="M3 4h10M4.5 8h7M6 12h4"/></svg></i>Criba</div>
+  <a class="item on" href="#"><svg viewBox="0 0 16 16"><path d="M8 3.5v9M3.5 8h9"/></svg>Nuevo libro</a>
+  <a class="item" href="#"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/></svg>Historial</a>
+  <div class="spacer"></div>
+  <a class="item" href="#"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="2"/><path d="M8 1.8v1.7M8 12.5v1.7M1.8 8h1.7M12.5 8h1.7M3.6 3.6l1.2 1.2M11.2 11.2l1.2 1.2M3.6 12.4l1.2-1.2M11.2 4.8l1.2-1.2"/></svg>Ajustes</a>
+</aside>
+<main>
+  <header>
+    <span class="step on"><b>1</b>Libro</span><span class="sep"></span>
+    <span class="step"><b>2</b>Procesar</span><span class="sep"></span>
+    <span class="step"><b>3</b>Listo</span>
+  </header>
+  <div class="body">
+    <div><h1>Revisa tu libro</h1><p class="lede">Elige qué capítulos entran. Lo demás ya está listo.</p></div>
+    <div class="file">
+      <div class="doc">PDF</div>
+      <div><div class="n">Biologia_Geologia_1Bach.pdf</div>
+      <div class="m num">312 páginas<span>·</span>4 escaneadas, se leerán con la IA</div></div>
+      <button class="btn2">Cambiar libro</button>
+    </div>
+    <div><label class="lbl" for="asig">Asignatura</label>
+      <input class="input" id="asig" value="Biología y Geología 1.º Bachillerato"></div>
+    <div class="chap">
+      <div class="hd"><span class="lbl">Capítulos detectados <small class="num">13 de 14 marcados</small></span></div>
+      <ul class="list num">
+        <li class="off"><label><input type="checkbox"><span>Preliminares</span><span class="pp">pp. 1–7</span></label></li>
+        <li><label><input type="checkbox" checked><span>1. La organización de los seres vivos</span><span class="pp">pp. 8–27</span></label></li>
+        <li><label><input type="checkbox" checked><span>2. La célula, unidad de vida</span><span class="pp">pp. 28–51</span></label></li>
+        <li><label><input type="checkbox" checked><span>3. Los tejidos animales y vegetales</span><span class="pp">pp. 52–71</span></label></li>
+        <li><label><input type="checkbox" checked><span>4. La clasificación de los seres vivos</span><span class="pp">pp. 72–93</span></label></li>
+        <li><label><input type="checkbox" checked><span>5. Las plantas: nutrición</span><span class="pp">pp. 94–119</span></label></li>
+        <li><label><input type="checkbox" checked><span>6. Las plantas: relación y reproducción</span><span class="pp">pp. 120–143</span></label></li>
+        <li><label><input type="checkbox" checked><span>7. Los animales: nutrición</span><span class="pp">pp. 144–171</span></label></li>
+        <li><label><input type="checkbox" checked><span>8. Los animales: relación</span><span class="pp">pp. 172–199</span></label></li>
+        <li><label><input type="checkbox" checked><span>9. Los animales: reproducción</span><span class="pp">pp. 200–223</span></label></li>
+        <li><label><input type="checkbox" checked><span>10. Estructura de la Tierra</span><span class="pp">pp. 224–251</span></label></li>
+        <li><label><input type="checkbox" checked><span>11. Los minerales y las rocas</span><span class="pp">pp. 252–275</span></label></li>
+        <li><label><input type="checkbox" checked><span>12. La tectónica de placas</span><span class="pp">pp. 276–297</span></label></li>
+        <li><label><input type="checkbox" checked><span>13. La historia de la Tierra</span><span class="pp">pp. 298–312</span></label></li>
+      </ul>
+      <div class="foot"><a class="link" href="#"><svg viewBox="0 0 16 16"><path d="M2.5 8h11M5 5.5 2.5 8 5 10.5M11 5.5 13.5 8 11 10.5"/></svg>Elegir un rango de páginas</a><span class="num">305 páginas seleccionadas</span></div>
+    </div>
+  </div>
+</main>
+<aside class="sum">
+  <h2>Resumen</h2>
+  <div><span class="lbl">Nivel de detalle</span>
+    <div class="seg num"><input type="radio" name="d" id="d1"><label for="d1">Esencial<small>≈10 %</small></label><input type="radio" name="d" id="d2" checked><label for="d2">Normal<small>≈15 %</small></label><input type="radio" name="d" id="d3"><label for="d3">Completo<small>≈20 %</small></label></div></div>
+  <div><span class="lbl">Tipo de examen</span>
+    <div class="seg"><input type="radio" name="t" id="t1"><label for="t1">Test</label><input type="radio" name="t" id="t2"><label for="t2">Desarrollo</label><input type="radio" name="t" id="t3" checked><label for="t3">Mixto</label></div></div>
+  <a class="link" href="#"><svg viewBox="0 0 16 16"><path d="M8 3.5v9M3.5 8h9"/></svg>Añadir exámenes antiguos (opcional)</a>
+  <div class="est">
+    <span class="lbl">Estimación</span>
+    <div class="cost num">≈ 2,10 €<span>2,28 $</span></div>
+    <ul class="facts num"><li>Páginas<b>305</b></li><li>Llamadas a la IA<b>unas 96</b></li><li>Tiempo<b>unos 12 minutos</b></li></ul>
+    <p class="note"><svg viewBox="0 0 16 16"><path d="M8 1.8 3 3.8v4c0 3 2.2 5.2 5 6.4 2.8-1.2 5-3.4 5-6.4v-4z"/><path d="m5.8 8 1.6 1.6 2.9-3"/></svg>Solo pagas lo que proceses. Si cancelas, lo hecho se guarda.</p>
+    <button class="primary">Generar resumen y esquema</button>
+  </div>
+</aside>
+</body></html>

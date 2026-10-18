@@ -1,13 +1,27 @@
+from pathlib import Path
+
 import pytest
 from PySide6.QtCore import QtMsgType, qInstallMessageHandler
 
-from criba.gui.main_window import create_engine
+from criba.core.cache import Cache
+from criba.gui.backend import Backend
+from criba.gui.main_window import create_engine, load_fonts
 
 pytestmark = pytest.mark.gui
 
 
-def test_main_window_loads(qapp) -> None:
-    engine = create_engine()
+@pytest.fixture
+def engine(qapp, app_dirs: Path):
+    load_fonts(qapp)
+    with Cache(app_dirs / "cache.sqlite3") as cache:
+        backend = Backend(cache)
+        eng = create_engine(backend)
+        yield eng
+        backend.shutdown()
+        del eng
+
+
+def test_main_window_loads(engine) -> None:
     roots = engine.rootObjects()
     assert roots, "QML no ha cargado"
     win = roots[0]
@@ -16,7 +30,7 @@ def test_main_window_loads(qapp) -> None:
     assert win.property("title") == "Criba"
 
 
-def test_qml_has_no_warnings(qapp, qtbot) -> None:
+def test_qml_has_no_warnings(qapp, qtbot, app_dirs) -> None:
     warnings: list[str] = []
 
     def handler(mode, _ctx, msg) -> None:
@@ -25,9 +39,12 @@ def test_qml_has_no_warnings(qapp, qtbot) -> None:
 
     previous = qInstallMessageHandler(handler)
     try:
-        engine = create_engine()
-        qtbot.wait(50)
-        assert engine.rootObjects()
+        with Cache(app_dirs / "cache.sqlite3") as cache:
+            backend = Backend(cache)
+            eng = create_engine(backend)
+            qtbot.wait(50)
+            assert eng.rootObjects()
+            del eng
     finally:
         qInstallMessageHandler(previous)
     assert not [w for w in warnings if "qml" in w.lower()], warnings

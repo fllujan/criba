@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Criba · Libro de texto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#22261C;--ink2:#4A5040;--muted:#656B5C;--rule:#DCDFD5;--paper:#FFFFFF;--sheet:#FAFBF7;--acc:#6B8E23;--acc-d:#4E6A17;--acc-dd:#3D5412;--t0:#E9F0DC;--grey:#EEEFEA;--focus:#4E6A17}
+*{box-sizing:border-box}
+html,body{margin:0;width:1440px;height:900px;overflow:hidden}
+body{background:var(--paper);color:var(--ink);font:400 14px/1.45 Inter,sans-serif;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+::selection{background:#CFDDB1;color:var(--ink)}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+input,button{font:inherit;color:inherit}
+a{color:var(--acc-d);font-weight:600;text-underline-offset:3px;text-decoration-thickness:1px}
+a:hover{color:var(--acc-dd);text-decoration-thickness:2px}
+svg{flex:none}
+/* barra */
+.bar{height:56px;display:flex;align-items:center;gap:40px;padding:0 24px;border-bottom:1px solid var(--rule)}
+.brand{font:800 19px/1 Inter;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+.brand i{width:10px;height:10px;border-radius:50%;background:var(--acc)}
+.steps{display:flex;align-items:center;gap:10px;font-weight:600;color:var(--muted)}
+.steps span{display:flex;align-items:center;gap:8px}
+.steps b{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12px;border:1.5px solid #B9BDB0;color:var(--muted)}
+.steps .on{color:var(--ink)}.steps .on b{background:var(--acc-d);border-color:var(--acc-d);color:#fff}
+.steps hr{width:28px;border:0;border-top:1px solid #C9CCC1;margin:0}
+.tools{margin-left:auto;display:flex;gap:4px}
+.tb{display:flex;align-items:center;gap:7px;height:32px;padding:0 12px;border:0;background:none;border-radius:6px;font-weight:500;cursor:pointer;color:var(--ink2)}
+.tb:hover{background:var(--grey);color:var(--ink)}
+/* cuerpo */
+.wrap{display:flex;height:844px}
+main{flex:1;padding:32px 48px 0 48px;min-width:0}
+.band{height:88px;background:var(--acc);border-radius:4px;display:flex;align-items:center;gap:20px;padding:0 28px;color:#fff;position:relative;overflow:hidden}
+.band .num{width:52px;height:52px;border-radius:50%;background:#fff;color:var(--acc-d);display:grid;place-items:center;font:800 26px/1 Inter}
+.band h1{margin:0;font:800 32px/1 Inter;letter-spacing:-.025em}
+.band::after{content:"";position:absolute;right:0;top:0;bottom:0;width:180px;background:var(--acc-d)}
+.band .tag{position:absolute;right:28px;z-index:1;font:700 15px/1.2 Inter;text-align:right}
+.field{margin-top:28px}
+label.l,.l{display:block;font-weight:600;font-size:13px;color:var(--ink2);margin-bottom:6px}
+.in{width:520px;height:40px;border:1px solid #B9BDB0;border-radius:6px;padding:0 12px;font-size:15px;font-weight:500;background:#fff}
+.in:hover{border-color:#8F9584}.in:focus{outline:none;border-color:var(--acc-d);box-shadow:0 0 0 3px #D7E4BE}
+.file{margin-top:20px;display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.file strong{font-weight:600}.file .m{color:var(--muted)}
+.btn2{margin-left:auto;height:32px;padding:0 14px;border:1px solid #B9BDB0;border-radius:6px;background:#fff;font-weight:600;cursor:pointer}
+.btn2:hover{background:var(--sheet);border-color:#8F9584}
+.opts{display:flex;gap:40px;margin-top:24px}
+.seg{display:inline-flex;border:1px solid #B9BDB0;border-radius:7px;padding:2px;background:var(--sheet)}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label{height:32px;padding:0 14px;display:flex;align-items:center;gap:5px;border-radius:5px;font-weight:500;cursor:pointer;color:var(--ink2)}
+.seg label small{color:var(--muted);font-size:12px}
+.seg label:hover{background:var(--grey)}
+.seg input:checked+label{background:var(--acc-d);color:#fff;font-weight:600}
+.seg input:checked+label small{color:#E3ECD2}
+.seg input:focus-visible+label{outline:2px solid var(--focus);outline-offset:1px}
+.more{display:inline-flex;align-items:center;gap:6px;margin-top:20px}
+.rec{margin-top:28px;width:680px;background:var(--t0);border-left:4px solid var(--acc);border-radius:0 6px 6px 0;padding:18px 24px 22px}
+.rec h2{margin:0 0 10px;display:inline-block;font:800 13px/1 Inter;letter-spacing:.04em;text-transform:uppercase;color:var(--acc-dd)}
+.cost{font:800 28px/1.1 Inter;letter-spacing:-.02em}.cost span{font-weight:600;font-size:17px;color:var(--ink2);letter-spacing:0}
+.meta{margin:6px 0 2px;font-weight:500;color:var(--ink2)}
+.note{margin:0;color:#4C5A33}
+.go{margin-top:18px;height:44px;padding:0 22px;border:0;border-radius:7px;background:var(--acc-d);color:#fff;font-weight:700;font-size:15px;display:inline-flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 1px 2px rgba(34,38,28,.18),0 4px 10px -4px rgba(61,84,18,.35)}
+.go:hover{background:var(--acc-dd)}.go:active{transform:translateY(1px)}
+/* índice de pestañas */
+aside{width:400px;border-left:1px solid var(--rule);background:var(--sheet);padding:20px 0 0 20px;display:flex;flex-direction:column}
+.ah{display:flex;align-items:baseline;justify-content:space-between;padding-right:24px;margin-bottom:12px}
+.ah h2{margin:0;font:700 15px/1 Inter}.ah span{font-size:13px;color:var(--muted)}
+.tabs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
+.tab{position:relative;height:50px;display:flex;align-items:center;gap:10px;padding:0 34px 0 12px;border-radius:8px 0 0 8px;background:var(--c);cursor:pointer}
+.tab::after{content:"";position:absolute;right:0;top:0;bottom:0;width:14px;background:var(--e)}
+.tab:hover{filter:brightness(.97)}
+.tab input{width:16px;height:16px;margin:0;accent-color:var(--acc-d);cursor:pointer}
+.tab .n{width:24px;height:24px;border-radius:50%;background:var(--acc-d);color:#fff;display:grid;place-items:center;font:700 12px/1 Inter}
+.tab .t{flex:1;font:600 15px/1.2 "Source Serif 4",serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tab .p{font-size:12px;color:var(--ink2);font-weight:500}
+.tab.off{--c:var(--grey);--e:#B5B8AE}.tab.off .n{background:#8A8F80}.tab.off .t{color:var(--muted);font-weight:500}
+.tab.rest{--c:transparent;--e:transparent;height:38px;border:1px dashed #B9BDB0;border-right:0;margin-top:3px}
+.af{margin-top:auto;padding:14px 24px 18px 0;display:flex;justify-content:space-between;font-size:13px;border-top:1px solid var(--rule);margin-right:0}
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="brand"><i></i>Criba</div>
+  <nav class="steps" aria-label="Pasos">
+    <span class="on"><b>1</b>Libro</span><hr><span><b>2</b>Procesar</span><hr><span><b>3</b>Listo</span>
+  </nav>
+  <div class="tools">
+    <button class="tb"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>Historial</button>
+    <button class="tb"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Ajustes</button>
+  </div>
+</header>
+<div class="wrap">
+<main>
+  <section class="band"><div class="num">1</div><h1>Tu libro</h1><div class="tag">Elige qué estudiar</div></section>
+  <div class="field"><label class="l" for="asig">Asignatura</label><input id="asig" class="in" value="Biología y Geología 1.º Bachillerato"></div>
+  <div class="file">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4E6A17" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>
+    <strong>Biologia_Geologia_1Bach.pdf</strong><span class="m">312 páginas · 4 escaneadas (se leerán con la IA)</span>
+    <button class="btn2">Cambiar libro</button>
+  </div>
+  <div class="opts">
+    <div><span class="l">Nivel de detalle</span><div class="seg" role="radiogroup">
+      <input type="radio" name="d" id="d1"><label for="d1">Esencial <small>≈10 %</small></label>
+      <input type="radio" name="d" id="d2" checked><label for="d2">Normal <small>≈15 %</small></label>
+      <input type="radio" name="d" id="d3"><label for="d3">Completo <small>≈20 %</small></label></div></div>
+    <div><span class="l">Tipo de examen</span><div class="seg" role="radiogroup">
+      <input type="radio" name="e" id="e1"><label for="e1">Test</label>
+      <input type="radio" name="e" id="e2"><label for="e2">Desarrollo</label>
+      <input type="radio" name="e" id="e3" checked><label for="e3">Mixto</label></div></div>
+  </div>
+  <a class="more" href="#"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Añadir exámenes antiguos (opcional)</a>
+  <section class="rec" aria-live="polite">
+    <h2>Recuerda</h2>
+    <div class="cost">≈ 2,10 € <span>(2,28 $)</span></div>
+    <p class="meta">305 páginas · unas 96 llamadas a la IA · unos 12 minutos</p>
+    <p class="note">Solo pagas lo que proceses. Si cancelas, lo hecho se guarda.</p>
+    <button class="go">Generar resumen y esquema<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+  </section>
+</main>
+<aside aria-label="Capítulos">
+  <div class="ah"><h2>Capítulos</h2><span>13 de 14 marcados</span></div>
+  <ul class="tabs">
+    <li><label class="tab off"><input type="checkbox"><span class="n">P</span><span class="t">Preliminares</span><span class="p">pp. 1–7</span></label></li>
+    <li><label class="tab" style="--c:#E9F0DC;--e:#B7CB8D"><input type="checkbox" checked><span class="n">1</span><span class="t">La organización de los seres vivos</span><span class="p">pp. 8–27</span></label></li>
+    <li><label class="tab" style="--c:#E6EED7;--e:#ACC37E"><input type="checkbox" checked><span class="n">2</span><span class="t">La célula, unidad de vida</span><span class="p">pp. 28–51</span></label></li>
+    <li><label class="tab" style="--c:#E2EBD1;--e:#A2BB70"><input type="checkbox" checked><span class="n">3</span><span class="t">Los tejidos animales y vegetales</span><span class="p">pp. 52–71</span></label></li>
+    <li><label class="tab" style="--c:#DFE9CC;--e:#97B362"><input type="checkbox" checked><span class="n">4</span><span class="t">La clasificación de los seres vivos</span><span class="p">pp. 72–93</span></label></li>
+    <li><label class="tab" style="--c:#DCE7C7;--e:#8DAB54"><input type="checkbox" checked><span class="n">5</span><span class="t">Las plantas: nutrición</span><span class="p">pp. 94–119</span></label></li>
+    <li><label class="tab" style="--c:#D9E4C2;--e:#83A447"><input type="checkbox" checked><span class="n">6</span><span class="t">Las plantas: relación y reproducción</span><span class="p">pp. 120–143</span></label></li>
+    <li><label class="tab" style="--c:#D5E2BD;--e:#7A9C3A"><input type="checkbox" checked><span class="n">7</span><span class="t">Los animales: nutrición</span><span class="p">pp. 144–171</span></label></li>
+    <li><label class="tab" style="--c:#D2DFB8;--e:#73962F"><input type="checkbox" checked><span class="n">8</span><span class="t">Los animales: relación</span><span class="p">pp. 172–199</span></label></li>
+    <li><label class="tab" style="--c:#CFDDB3;--e:#6F9228"><input type="checkbox" checked><span class="n">9</span><span class="t">Los animales: reproducción</span><span class="p">pp. 200–223</span></label></li>
+    <li><label class="tab" style="--c:#CCDBAE;--e:#6B8E23"><input type="checkbox" checked><span class="n">10</span><span class="t">Estructura de la Tierra</span><span class="p">pp. 224–251</span></label></li>
+    <li><a class="tab rest" href="#" style="font-size:13px">Ver los 3 capítulos restantes · pp. 252–312</a></li>
+  </ul>
+  <div class="af"><a href="#">Elegir un rango de páginas</a><span style="color:var(--muted)">305 de 312 páginas</span></div>
+</aside>
+</div>
+</body>
+</html>
