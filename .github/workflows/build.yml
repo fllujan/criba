@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-14, windows-latest]
+        os: [macos-15, windows-latest]  # macos-14 está obsoleto en GitHub
     runs-on: ${{ matrix.os }}
     env:
       QT_QPA_PLATFORM: offscreen
@@ -55,4 +55,108 @@ jobs:
           path: coverage.xml
           if-no-files-found: ignore
 
-  # Los jobs de empaquetado (.dmg y .exe) y la release se añaden en la fase F6.
+  package:
+    name: Instalador (${{ matrix.name }})
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: Mac Apple Silicon, os: macos-15 }
+          - { name: Mac Intel, os: macos-15-intel }
+          - { name: Windows, os: windows-latest }
+    runs-on: ${{ matrix.os }}
+    env:
+      PYTHONUTF8: "1"
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Instalar uv
+        uses: astral-sh/setup-uv@v10.3.0
+        with:
+          enable-cache: true
+
+      - name: Instalar dependencias
+        run: uv sync --locked --group package
+
+      - name: Versión
+        id: version
+        run: |
+          version=$(uv run python -c "import criba; print(criba.__version__)")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [[ "$GITHUB_REF" == refs/tags/v* && "${GITHUB_REF_NAME#v}" != "$version" ]]; then
+            echo "::error::La etiqueta $GITHUB_REF_NAME no coincide con criba.__version__ ($version)"
+            exit 1
+          fi
+
+      - name: PyInstaller
+        run: uv run pyinstaller packaging/criba.spec --noconfirm --distpath dist --workpath build/pyinstaller
+
+      - name: Autocomprobación de la app empaquetada (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          codesign --verify --deep --strict dist/Criba.app
+          uv run python packaging/selftest_frozen.py dist/Criba.app/Contents/MacOS/Criba
+
+      - name: Autocomprobación de la app empaquetada (Windows)
+        if: runner.os == 'Windows'
+        run: uv run python packaging/selftest_frozen.py dist/Criba/Criba.exe
+
+      - name: Crear y probar el .dmg
+        if: runner.os == 'macOS'
+        run: |
+          uv run python packaging/macos/make_dmg.py
+          dmg=$(ls dist/Criba-*.dmg)
+          mnt=$(mktemp -d)
+          hdiutil attach -nobrowse -readonly -mountpoint "$mnt" "$dmg"
+          codesign --verify --deep --strict "$mnt/Criba.app"
+          uv run python packaging/selftest_frozen.py "$mnt/Criba.app/Contents/MacOS/Criba"
+          hdiutil detach "$mnt" -force
+
+      - name: Crear y probar el instalador de Windows
+        if: runner.os == 'Windows'
+        run: |
+          iscc=$(command -v iscc || echo "/c/Program Files (x86)/Inno Setup 6/ISCC.exe")
+          "$iscc" //Q "//DAppVersion=${{ steps.version.outputs.version }}" packaging/windows/criba.iss
+          setup="dist/Criba-Setup-${{ steps.version.outputs.version }}.exe"
+          target="$RUNNER_TEMP/CribaInstalada"
+          "$setup" //VERYSILENT //SUPPRESSMSGBOXES //CURRENTUSER "//DIR=$(cygpath -w "$target")"
+          uv run python packaging/selftest_frozen.py "$target/Criba.exe"
+          "$target/unins000.exe" //VERYSILENT //SUPPRESSMSGBOXES
+
+      - name: Subir el instalador
+        uses: actions/upload-artifact@v7
+        with:
+          name: criba-${{ matrix.os }}
+          path: |
+            dist/*.dmg
+            dist/Criba-Setup-*.exe
+          if-no-files-found: error
+
+  release:
+    name: Publicar la release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: criba-*
+          path: dist
+          merge-multiple: true
+
+      - name: Crear la release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --title "Criba ${GITHUB_REF_NAME#v}" \
+            --notes-file packaging/release-notes.md \
+            --generate-notes

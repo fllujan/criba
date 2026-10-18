@@ -5,9 +5,13 @@ Criba convierte un libro de texto en PDF en dos documentos de estudio:
 - **Resumen para estudiar**: lo que hay que saber, ordenado por importancia y con la página del libro en cada idea.
 - **Esquema de examen**: lo más importante en forma de esquema, con preguntas probables y una checklist de repaso.
 
-App de escritorio para **macOS** (Apple Silicon e Intel) y **Windows 10/11**. Usa la API de Claude (Anthropic). El libro solo sale de tu ordenador hacia la API de Anthropic. No hay telemetría.
+App de escritorio para **macOS 14 o posterior** (Apple Silicon e Intel) y **Windows 10/11**. Usa la API de Claude (Anthropic). El libro solo sale de tu ordenador hacia la API de Anthropic. No hay telemetría.
 
-> Estado: en desarrollo. Ya funcionan la lectura del PDF, el análisis con IA, los dos PDF, la interfaz y los exámenes antiguos (F1–F5). La especificación completa está en [`spec.md`](spec.md).
+> La especificación completa está en [`spec.md`](spec.md).
+
+## Instalar
+
+Descarga el instalador de tu sistema en [Releases](https://github.com/fllujan/criba/releases). Las instrucciones (incluido qué hacer con los avisos de macOS y de Windows, porque la app aún no está firmada) están en [`packaging/release-notes.md`](packaging/release-notes.md).
 
 ## Desarrollo
 
@@ -51,6 +55,20 @@ uv run mypy                  # modo strict
 uv run pytest --cov          # cobertura mínima del 80 %
 uv run pytest -m live        # pruebas contra la API real (necesitan ANTHROPIC_API_KEY y gastan saldo)
 ```
+
+### Instaladores
+
+```bash
+uv sync --group package
+uv run pyinstaller packaging/criba.spec --noconfirm   # dist/Criba.app o dist/Criba/Criba.exe
+uv run python packaging/selftest_frozen.py dist/Criba.app/Contents/MacOS/Criba   # autocomprobación
+uv run python packaging/macos/make_dmg.py             # macOS: dist/Criba-x.y.z-<Mac>.dmg
+iscc /DAppVersion=x.y.z packaging\windows\criba.iss  # Windows: dist\Criba-Setup-x.y.z.exe
+```
+
+El CI hace esto en un Mac Apple Silicon, un Mac Intel y Windows en cada push: construye, ejecuta la autocomprobación de la app empaquetada (procesa un libro de prueba con la IA simulada, carga la interfaz y busca el llavero), monta el `.dmg` o instala en silencio el `.exe` y la repite sobre lo instalado. Para publicar una versión, sube `version` en `pyproject.toml` y `src/criba/__init__.py`, y crea la etiqueta: `git tag v1.0.0 && git push origin v1.0.0`. Los tres instaladores aparecen en Releases.
+
+Si cambias `packaging/icon/*.svg`, regenera los iconos con `uv run python scripts/build_icons.py`.
 
 ## Arquitectura
 

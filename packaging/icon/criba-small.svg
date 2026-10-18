@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Variante para 16 y 32 px: sin las líneas de la etiqueta y con trazos más gruesos. -->
+  <rect x="32" y="32" width="960" height="960" rx="200" fill="#4E6A17"/>
+  <rect x="152" y="232" width="720" height="560" rx="72" fill="#FFFFFF"/>
+  <g transform="translate(272 292) scale(24)" fill="none" stroke="#1F3A8A" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke-width="2.2" d="M3.2 3.6 C7 3.1 12.5 3.3 16.6 3.2 C16.9 7.5 16.7 12.4 16.9 16.5 C12 16.9 7.4 16.6 3.4 16.8 C3.1 12.3 3.4 7.8 3.2 3.6Z"/>
+    <path stroke-width="3.2" d="M5.6 10.4 C6.8 11.3 7.9 12.6 8.7 14.1 C10.6 9.6 13.4 5.6 18.4 1.6"/>
+  </g>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Icono de Criba: la tapa verde del cuaderno con su etiqueta y una casilla marcada a bolígrafo.
+       Mismos colores que Theme.qml (cover, label, pen, fieldBorder) y mismo trazo que Mark.qml. -->
+  <rect x="100" y="100" width="824" height="824" rx="184" fill="#4E6A17"/>
+  <rect x="196" y="316" width="632" height="392" rx="56" fill="#FFFFFF"/>
+  <g transform="translate(236 368) scale(14)" fill="none" stroke="#1F3A8A" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke-width="1.5" d="M3.2 3.6 C7 3.1 12.5 3.3 16.6 3.2 C16.9 7.5 16.7 12.4 16.9 16.5 C12 16.9 7.4 16.6 3.4 16.8 C3.1 12.3 3.4 7.8 3.2 3.6Z"/>
+    <path stroke-width="2.4" d="M5.6 10.4 C6.8 11.3 7.9 12.6 8.7 14.1 C10.6 9.6 13.4 5.6 18.4 1.6"/>
+  </g>
+  <g stroke="#B9C4B1" stroke-width="26" stroke-linecap="round">
+    <line x1="556" y1="470" x2="768" y2="470"/>
+    <line x1="556" y1="560" x2="700" y2="560"/>
+  </g>
+</svg>

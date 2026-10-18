@@ -34,7 +34,7 @@ packages = ["src/criba"]
 line-length = 100
 target-version = "py312"
 src = ["src", "tests"]
-include = ["src/**/*.py", "tests/**/*.py", "scripts/**/*.py"]
+include = ["src/**/*.py", "tests/**/*.py", "scripts/**/*.py", "packaging/**/*.py"]
 
 [tool.ruff.lint]
 select = [
@@ -50,7 +50,7 @@ ignore = [
 "tests/**" = ["S101", "S603", "S607", "S314", "D", "ANN", "PLR2004", "PLR0917", "TID251"]
 "src/criba/gui/**" = ["TID251", "N802", "N815", "ANN401"]  # nombres y tipos de la API de Qt
 "src/criba/__main__.py" = ["TID251"]
-"scripts/**" = ["TID251", "S603", "S607", "ANN", "D103", "PLR0915", "E402"]  # herramientas de desarrollo
+"{scripts,packaging}/**" = ["TID251", "S603", "S607", "ANN", "D103", "PLR0915", "E402"]  # herramientas de desarrollo
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
 "PySide6".msg = "core/ y render/ no pueden importar Qt (solo gui/)."
@@ -101,4 +101,7 @@ dev = [
     "pytest-cov>=7.1.0",
     "pytest-qt>=4.5.0",
     "ruff>=0.17.1",
+]
+package = [
+    "pyinstaller>=6.22.3",
 ]
