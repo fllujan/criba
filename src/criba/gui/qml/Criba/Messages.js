@@ -9,6 +9,9 @@ function error(kind) {
     case "TOO_MANY_PAGES": return qsTr("Este PDF tiene más de 1.500 páginas. Elige uno más corto o divídelo.")
     case "TOO_LARGE": return qsTr("Este PDF ocupa más de 500 MB. Elige uno más ligero.")
     case "NO_TEXT": return qsTr("No se ha encontrado texto en este PDF.")
+    case "EXAM_TOO_LONG": return qsTr("Este examen tiene más de 50 páginas. Añade solo exámenes, no libros ni apuntes.")
+    case "TOO_MANY_EXAMS": return qsTr("Añade como mucho 10 exámenes.")
+    case "EXAMS_TOO_BIG": return qsTr("Entre todos, los exámenes pasan de 60 páginas o de 20 escaneadas. Quita alguno.")
     case "INVALID_KEY": return qsTr("La clave de API no es válida o ha caducado.")
     case "NO_CREDIT": return qsTr("Tu cuenta de Anthropic no tiene saldo suficiente.")
     case "OFFLINE": return qsTr("No hay conexión a Internet. Lo procesado se ha guardado.")
@@ -132,6 +135,10 @@ function modelHint(id) {
 
 function pageCount(n) {
     return n === 1 ? qsTr("1 pág.") : qsTr("%1 págs.").arg(integer(n))
+}
+
+function exams(n) {
+    return n === 1 ? qsTr("1 examen antiguo") : qsTr("%1 exámenes antiguos").arg(integer(n))
 }
 
 function books(n) {

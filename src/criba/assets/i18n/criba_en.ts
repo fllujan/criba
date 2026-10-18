@@ -86,32 +86,60 @@
     </message>
     <message>
         <location filename="../../gui/qml/screens/DoneScreen.qml" line="132"/>
+        <source>No se han podido analizar los exámenes antiguos, así que los PDF van sin la etiqueta «Ha caído en examen». Si vuelves a generarlo, lo demás ya no se paga.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/qml/screens/DoneScreen.qml" line="141"/>
         <source>Resumen para estudiar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/DoneScreen.qml" line="133"/>
+        <location filename="../../gui/qml/screens/DoneScreen.qml" line="142"/>
         <source>Abrir resumen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/DoneScreen.qml" line="137"/>
+        <location filename="../../gui/qml/screens/DoneScreen.qml" line="146"/>
         <source>Esquema de examen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/DoneScreen.qml" line="138"/>
+        <location filename="../../gui/qml/screens/DoneScreen.qml" line="147"/>
         <source>Abrir esquema</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/DoneScreen.qml" line="147"/>
+        <location filename="../../gui/qml/screens/DoneScreen.qml" line="156"/>
         <source>Mostrar en carpeta</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/DoneScreen.qml" line="152"/>
+        <location filename="../../gui/qml/screens/DoneScreen.qml" line="161"/>
         <source>Procesar otro libro</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ExamList</name>
+    <message>
+        <location filename="../../gui/qml/Criba/ExamList.qml" line="16"/>
+        <source>Exámenes antiguos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/qml/Criba/ExamList.qml" line="46"/>
+        <source>%1 · escaneado</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/qml/Criba/ExamList.qml" line="55"/>
+        <source>Quitar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/qml/Criba/ExamList.qml" line="57"/>
+        <source>Quitar %1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -172,249 +200,303 @@
 <context>
     <name>HomeScreen</name>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="73"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="77"/>
         <source>Suelta el libro aquí</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="73"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="77"/>
         <source>Arrastra aquí tu libro en PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="85"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="89"/>
         <source>Leerlo y calcular el coste es gratis y no sale de tu ordenador.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="91"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="95"/>
         <source>Elegir archivo…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="105"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="109"/>
         <source>Leyendo el libro…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="119"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="123"/>
         <source>Página a página, sin conexión. En un libro largo tarda unos segundos.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="142"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="452"/>
+        <source>Leyendo los exámenes…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../../gui/qml/screens/HomeScreen.qml" line="143"/>
+        <source>Añadir exámenes antiguos (opcional)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="144"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="454"/>
+        <source>Añadir más exámenes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="153"/>
+        <source>Los temas que hayan caído subirán de prioridad y llevarán la etiqueta «Ha caído en examen».</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="184"/>
         <source>Tienes a medias «%1». Lo ya procesado está guardado: si sigues, no se vuelve a pagar.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="146"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="187"/>
         <source>Continuar donde lo dejaste</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="186"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="227"/>
         <source>%1 páginas · %2 escaneadas (se leerán con la IA)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="187"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="228"/>
         <source>%1 páginas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="194"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="235"/>
         <source>Cambiar libro</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="204"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="245"/>
         <source>Capítulos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="205"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="246"/>
         <source>%1 de %2 incluidos · %3 páginas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="214"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="255"/>
         <source>Este PDF no tiene índice ni títulos claros, así que lo hemos dividido en bloques de páginas.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="230"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="271"/>
         <source>Capítulos detectados</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="256"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="297"/>
         <source>Quitar todos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="256"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="297"/>
         <source>Marcar todos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="261"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="302"/>
         <source>Elegir un rango de páginas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="268"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="309"/>
         <source>De la página</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="276"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="317"/>
         <source>Primera página</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="279"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="320"/>
         <source>a la</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="287"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="328"/>
         <source>Última página</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="291"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="332"/>
         <source>Quitar el rango</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="326"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="367"/>
         <source>Opciones</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="331"/>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="340"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="372"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="381"/>
         <source>Nivel de detalle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="343"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="384"/>
         <source>Esencial</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="343"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="384"/>
         <source>≈10 % del libro</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="344"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="385"/>
         <source>Normal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="344"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="385"/>
         <source>≈15 %</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="345"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="386"/>
         <source>Completo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="345"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="386"/>
         <source>≈20 %</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="351"/>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="360"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="392"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="401"/>
         <source>Tipo de examen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="363"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="404"/>
         <source>Test</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="364"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="405"/>
         <source>Desarrollo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="365"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="406"/>
         <source>Mixto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="374"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="415"/>
         <source>Las preguntas probables serán de opción múltiple, con soluciones.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="375"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="416"/>
         <source>Las preguntas probables serán para desarrollar, con guion de respuesta.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="376"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="417"/>
         <source>Mezcla de preguntas tipo test y de desarrollo.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="383"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="426"/>
+        <source>Exámenes antiguos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="438"/>
+        <source>Opcional. Los temas que hayan caído suben de prioridad y llevan la etiqueta «Ha caído en examen».</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="439"/>
+        <source>Los temas que hayan caído suben de prioridad y llevan la etiqueta «Ha caído en examen».</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="453"/>
+        <source>Añadir exámenes antiguos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="473"/>
         <source>Coste estimado</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="392"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="482"/>
         <source>Gratis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="399"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="489"/>
         <source>Coste estimado: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="413"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="503"/>
         <source>Marca al menos un capítulo con texto.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="414"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="504"/>
         <source>%1 páginas · unas %2 llamadas a la IA · %3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="423"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="510"/>
+        <source>Incluye el análisis de %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="519"/>
         <source>Ya lo procesaste con estas opciones: generar los PDF no cuesta nada.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="425"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="521"/>
         <source>Parte ya está procesada y no se vuelve a pagar. Si cancelas, lo hecho se guarda.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="426"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="522"/>
         <source>Solo pagas lo que proceses. Si cancelas, lo hecho se guarda.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="434"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="530"/>
         <source>Has cancelado. Lo procesado está guardado: el coste de arriba es solo lo que falta.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="445"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="161"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="464"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="541"/>
         <source>Entendido</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/screens/HomeScreen.qml" line="454"/>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="23"/>
+        <source>No se ha podido añadir «%1»: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/qml/screens/HomeScreen.qml" line="550"/>
         <source>Generar resumen y esquema</source>
         <translation type="unfinished"></translation>
     </message>
@@ -455,77 +537,87 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Main.qml" line="179"/>
+        <location filename="../../gui/qml/Main.qml" line="180"/>
         <source>Elige tu libro en PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Main.qml" line="180"/>
+        <location filename="../../gui/qml/Main.qml" line="181"/>
         <source>Libros en PDF (*.pdf)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Main.qml" line="187"/>
-        <source>Elige dónde guardar los PDF</source>
+        <location filename="../../gui/qml/Main.qml" line="186"/>
+        <source>Elige exámenes antiguos en PDF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/qml/Main.qml" line="188"/>
+        <source>Exámenes en PDF (*.pdf)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/qml/Main.qml" line="195"/>
+        <source>Elige dónde guardar los PDF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/qml/Main.qml" line="203"/>
         <source>¿Empezamos?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Main.qml" line="197"/>
+        <location filename="../../gui/qml/Main.qml" line="205"/>
         <source>Vas a procesar %1 páginas de «%2». Coste estimado: %3 (%4), que se cobra en tu cuenta de Anthropic. Tardará %5.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Main.qml" line="201"/>
+        <location filename="../../gui/qml/Main.qml" line="209"/>
         <source>Ya está todo procesado: generar los PDF de «%1» no cuesta nada.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Main.qml" line="202"/>
+        <location filename="../../gui/qml/Main.qml" line="210"/>
         <source>Confirmar y empezar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Main.qml" line="202"/>
+        <location filename="../../gui/qml/Main.qml" line="210"/>
         <source>Generar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Main.qml" line="208"/>
+        <location filename="../../gui/qml/Main.qml" line="216"/>
         <source>¿Cancelar el procesado?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Main.qml" line="209"/>
+        <location filename="../../gui/qml/Main.qml" line="217"/>
         <source>Lo ya procesado queda guardado y no se vuelve a pagar. Podrás continuar más tarde.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Main.qml" line="210"/>
+        <location filename="../../gui/qml/Main.qml" line="218"/>
         <source>Seguir procesando</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Main.qml" line="211"/>
+        <location filename="../../gui/qml/Main.qml" line="219"/>
         <source>Cancelar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Main.qml" line="217"/>
+        <location filename="../../gui/qml/Main.qml" line="225"/>
         <source>¿Borrar lo guardado?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Main.qml" line="218"/>
+        <location filename="../../gui/qml/Main.qml" line="226"/>
         <source>Si vuelves a procesar un libro, se pagará de nuevo. Los PDF que ya tienes no se borran.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Main.qml" line="219"/>
+        <location filename="../../gui/qml/Main.qml" line="227"/>
         <source>Borrar</source>
         <translation type="unfinished"></translation>
     </message>
@@ -564,426 +656,451 @@
     </message>
     <message>
         <location filename="../../gui/qml/Criba/Messages.js" line="12"/>
-        <source>La clave de API no es válida o ha caducado.</source>
+        <source>Este examen tiene más de 50 páginas. Añade solo exámenes, no libros ni apuntes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/qml/Criba/Messages.js" line="13"/>
-        <source>Tu cuenta de Anthropic no tiene saldo suficiente.</source>
+        <source>Añade como mucho 10 exámenes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/qml/Criba/Messages.js" line="14"/>
-        <source>No hay conexión a Internet. Lo procesado se ha guardado.</source>
+        <source>Entre todos, los exámenes pasan de 60 páginas o de 20 escaneadas. Quita alguno.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/qml/Criba/Messages.js" line="15"/>
-        <source>El servicio está saturado. Se reintentará automáticamente.</source>
+        <source>La clave de API no es válida o ha caducado.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/qml/Criba/Messages.js" line="16"/>
-        <source>No hay espacio para guardar el PDF.</source>
+        <source>Tu cuenta de Anthropic no tiene saldo suficiente.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/qml/Criba/Messages.js" line="17"/>
-        <source>No se puede guardar en esa carpeta. Elige otra.</source>
+        <source>No hay conexión a Internet. Lo procesado se ha guardado.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/qml/Criba/Messages.js" line="18"/>
-        <source>El servicio de IA ha rechazado la petición. Lo procesado se ha guardado.</source>
+        <source>El servicio está saturado. Se reintentará automáticamente.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/qml/Criba/Messages.js" line="19"/>
-        <source>No se ha podido procesar el libro. Lo procesado se ha guardado.</source>
+        <source>No hay espacio para guardar el PDF.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/qml/Criba/Messages.js" line="20"/>
-        <source>No se han podido generar los PDF. Lo procesado se ha guardado.</source>
+        <source>No se puede guardar en esa carpeta. Elige otra.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/qml/Criba/Messages.js" line="21"/>
-        <source>Falta la clave de API de Anthropic.</source>
+        <source>El servicio de IA ha rechazado la petición. Lo procesado se ha guardado.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/qml/Criba/Messages.js" line="22"/>
+        <source>No se ha podido procesar el libro. Lo procesado se ha guardado.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/qml/Criba/Messages.js" line="23"/>
+        <source>No se han podido generar los PDF. Lo procesado se ha guardado.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/qml/Criba/Messages.js" line="24"/>
+        <source>Falta la clave de API de Anthropic.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/qml/Criba/Messages.js" line="25"/>
         <source>Algo no ha ido bien. Lo procesado se ha guardado.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="28"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="31"/>
         <source>Elegir otro archivo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="29"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="32"/>
         <source>Cambiar clave</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="30"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="33"/>
         <source>Abrir la consola de Anthropic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="31"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="34"/>
         <source>Reintentar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="32"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="35"/>
         <source>Esperar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="33"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="36"/>
         <source>Cancelar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="34"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="37"/>
         <source>Elegir otra carpeta</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="41"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="44"/>
         <source>Leyendo el libro</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="42"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="45"/>
         <source>Leyendo las páginas escaneadas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="45"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="48"/>
         <source>Analizando el capítulo %1 de %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="46"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="49"/>
         <source>Analizando el libro</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="47"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="50"/>
         <source>Ordenando las ideas de cada capítulo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="48"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="51"/>
         <source>Generando los dos PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="49"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="52"/>
         <source>Listo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="50"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="53"/>
         <source>Preparando</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="67"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="70"/>
         <source>%1 €</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="71"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="74"/>
         <source>%1 $</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="76"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="79"/>
         <source>calculando…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="79"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="82"/>
         <source>menos de un minuto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="81"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="84"/>
         <source>un minuto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="83"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="86"/>
         <source>unos %1 minutos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="86"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="89"/>
         <source>unas %1 h y %2 min</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="86"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="89"/>
         <source>unas %1 h</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="90"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="93"/>
         <source>p. %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="90"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="93"/>
         <source>pp. %1–%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="97"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="100"/>
         <source>enero</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="97"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="100"/>
         <source>febrero</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="97"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="100"/>
         <source>marzo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="97"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="100"/>
         <source>abril</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="97"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="100"/>
         <source>mayo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="97"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="100"/>
         <source>junio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="98"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="101"/>
         <source>julio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="98"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="101"/>
         <source>agosto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="98"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="101"/>
         <source>septiembre</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="98"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="101"/>
         <source>octubre</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="98"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="101"/>
         <source>noviembre</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="98"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="101"/>
         <source>diciembre</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="99"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="102"/>
         <source>%1 de %2 de %3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="104"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="107"/>
         <source>Español</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="105"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="108"/>
         <source>Inglés</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="106"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="109"/>
         <source>Francés</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="107"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="110"/>
         <source>Portugués</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="108"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="111"/>
         <source>Italiano</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="109"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="112"/>
         <source>Alemán</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="110"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="113"/>
         <source>Catalán</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="111"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="114"/>
         <source>El del libro (automático)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="117"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="120"/>
         <source>Claude Sonnet 5.5</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="118"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="121"/>
         <source>Claude Haiku 5.5</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="119"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="122"/>
         <source>Claude Opus 5.5</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="126"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="129"/>
         <source>Equilibrio entre calidad y precio. Recomendado.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="127"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="130"/>
         <source>El más barato y rápido; resúmenes algo más simples.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="128"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="131"/>
         <source>El más preciso; cuesta unas dos veces más.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="134"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="137"/>
         <source>1 pág.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="134"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="137"/>
         <source>%1 págs.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="138"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="141"/>
+        <source>1 examen antiguo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/qml/Criba/Messages.js" line="141"/>
+        <source>%1 exámenes antiguos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/qml/Criba/Messages.js" line="145"/>
         <source>1 libro</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="138"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="145"/>
         <source>%1 libros</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="146"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="153"/>
         <source>ene</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="146"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="153"/>
         <source>feb</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="146"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="153"/>
         <source>mar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="146"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="153"/>
         <source>abr</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="146"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="153"/>
         <source>may</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="146"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="153"/>
         <source>jun</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="147"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="154"/>
         <source>jul</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="147"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="154"/>
         <source>ago</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="147"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="154"/>
         <source>sep</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="147"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="154"/>
         <source>oct</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="147"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="154"/>
         <source>nov</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="147"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="154"/>
         <source>dic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="148"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="155"/>
         <source>%1 %2 %3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="154"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="161"/>
         <source>La clave de API no es válida o ha caducado. Revisa que la has copiado entera.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="155"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="162"/>
         <source>La clave es correcta, pero tu cuenta de Anthropic no tiene saldo. Añádelo en la consola y vuelve a probar.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="156"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="163"/>
         <source>No hay conexión a Internet. Conéctate y vuelve a probar.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="157"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="164"/>
         <source>No se ha podido guardar la clave en el llavero del sistema.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/qml/Criba/Messages.js" line="158"/>
+        <location filename="../../gui/qml/Criba/Messages.js" line="165"/>
         <source>Anthropic no responde ahora mismo. Inténtalo de nuevo en unos minutos.</source>
         <translation type="unfinished"></translation>
     </message>

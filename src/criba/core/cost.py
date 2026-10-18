@@ -42,6 +42,8 @@ THINKING_FACTOR = 1.75  # razonamiento adaptativo (esfuerzo medio), se factura c
 OCR_INPUT_PER_PAGE = 2_400  # imagen de A4 a 150 ppp
 OCR_OUTPUT_PER_PAGE = 700
 OCR_BATCH = 5
+EXAMS_OUTPUT_BASE = 300  # exámenes antiguos: unos 60 tokens por pregunta, ~10 por página
+EXAMS_OUTPUT_PER_PAGE = 600
 # Tiempo: la salida se genera a ~OUTPUT_TOKENS_PER_SECOND por llamada, con 4 llamadas a la vez.
 OUTPUT_TOKENS_PER_SECOND = 170  # medido: 265.000 tokens en 6,6 min, 4 a la vez
 CALL_LATENCY = 3.0  # segundos de cada llamada antes de empezar a responder
@@ -152,10 +154,13 @@ def estimate(
     chapters: list[ChapterPlan],
     book_cached: bool = False,
     ocr_batches: list[tuple[int, bool]] | None = None,
+    exams: tuple[int, int, int, bool] | None = None,
 ) -> Estimate:
     """Estima llamadas y coste. Lo que ya está en caché no cuesta nada.
 
-    ``ocr_batches`` es una lista de (páginas del lote, ya en caché).
+    ``ocr_batches`` es una lista de (páginas del lote, ya en caché). ``exams`` es
+    (tokens de texto, páginas escaneadas, páginas en total, ya en caché) de la
+    llamada que analiza los exámenes antiguos; va a la vez que los fragmentos.
     """
     est = Estimate(model=model)
     map_outputs: list[int] = []
@@ -179,6 +184,15 @@ def estimate(
 
     for n, cached in ocr_batches or []:
         add("ocr", system_tokens + n * OCR_INPUT_PER_PAGE, n * OCR_OUTPUT_PER_PAGE, cached=cached)
+
+    if exams is not None:
+        text, images, pages, cached = exams
+        add(
+            "map",
+            system_tokens + text + images * OCR_INPUT_PER_PAGE,
+            EXAMS_OUTPUT_BASE + pages * EXAMS_OUTPUT_PER_PAGE,
+            cached=cached,
+        )
 
     for chapter in chapters:
         if not chapter.chunks:

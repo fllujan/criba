@@ -154,8 +154,11 @@ def _chapter(
     story: list[Flowable] = [
         Heading(esc(short(cap.titulo, 400)), st.h1, key=key, outline=short(cap.titulo, 120)),
         chapter_meta(cap, libro.idioma),
-        Paragraph(lb["scheme"], st.h3),
     ]
+    if cap.temas_examen:
+        topics = "; ".join(esc(t) for t in cap.temas_examen)
+        story.append(Paragraph(f"<b>{lb['fell_topics']}:</b> {topics}", st.small))
+    story.append(Paragraph(lb["scheme"], st.h3))
     for n1 in cap.esquema:
         story.append(_node(n1, 0))
         for n2 in n1.hijos:

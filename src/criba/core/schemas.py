@@ -12,7 +12,14 @@ Si una página cae fuera, la validación falla y la IA recibe el error para corr
 
 from typing import Literal, Self
 
-from pydantic import BaseModel, ConfigDict, ValidationInfo, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    ValidationInfo,
+    field_validator,
+    model_validator,
+)
 
 MAX_CITA_PALABRAS = 40
 OPCIONES_TEST = 4
@@ -173,6 +180,28 @@ class OcrResultado(_Modelo):
         return self
 
 
+class PreguntaExamen(_Modelo):
+    """Pregunta de un examen antiguo y el capítulo del libro donde está su tema."""
+
+    pregunta: str  # resumida en una frase
+    tema: str  # tema del libro, en pocas palabras
+    capitulo: int | None  # número de la lista de capítulos (desde 1); None = no está en el libro
+
+    @field_validator("capitulo")
+    @classmethod
+    def _capitulo(cls, v: int | None, info: ValidationInfo) -> int | None:
+        total = (info.context or {}).get("capitulos")
+        if v is not None and total is not None and not 1 <= v <= total:
+            return None  # un número imposible no tira el análisis entero: esa pregunta no cuenta
+        return v
+
+
+class AnalisisExamenes(_Modelo):
+    """Resultado de analizar los exámenes antiguos (antes del reduce)."""
+
+    preguntas: list[PreguntaExamen]
+
+
 class Capitulo(_Modelo):
     """Capítulo final, tal como lo usan los PDF."""
 
@@ -185,6 +214,7 @@ class Capitulo(_Modelo):
     preguntas: list[PreguntaProbable]
     paja: list[str]  # para «Lo que puedes saltarte»
     ha_caido_en_examen: bool
+    temas_examen: list[str] = Field(default_factory=list)  # qué ha caído (F5)
 
 
 class Libro(_Modelo):

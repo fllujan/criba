@@ -78,9 +78,12 @@ def chunk_request(opts: StudyOptions, chunk: Chunk) -> LLMRequest:
 
 
 def chapter_request(
-    opts: StudyOptions, chapter: Chapter, analyses: list[schemas.ChunkAnalysis]
+    opts: StudyOptions,
+    chapter: Chapter,
+    analyses: list[schemas.ChunkAnalysis],
+    exam_note: str = "",
 ) -> LLMRequest:
-    """Petición de la etapa reduce para un capítulo."""
+    """Petición de la etapa reduce para un capítulo (``exam_note``: lo que ha caído)."""
     header = (
         f"Capítulo: {chapter.title}\n"
         f"Páginas: {chapter.start_page}–{chapter.end_page} ({chapter.pages} páginas).\n"
@@ -89,7 +92,11 @@ def chapter_request(
     )
     return LLMRequest(
         system=system_for("synthesize_chapter", opts),
-        content=[header, dumps([a.model_dump() for a in analyses])],
+        content=[
+            header,
+            *([exam_note] if exam_note else []),
+            dumps([a.model_dump() for a in analyses]),
+        ],
         schema=schemas.SintesisCapitulo,
         max_tokens=CHAPTER_MAX_TOKENS,
         context={"paginas": (chapter.start_page, chapter.end_page)},
@@ -116,23 +123,46 @@ def book_request(opts: StudyOptions, chapters: list[schemas.Capitulo]) -> LLMReq
     )
 
 
-def to_capitulo(chapter: Chapter, s: schemas.SintesisCapitulo) -> schemas.Capitulo:
-    """Capítulo final a partir de la síntesis."""
+_PRIORITY_UP: dict[schemas.Prioridad, schemas.Prioridad] = {
+    "baja": "media",
+    "media": "alta",
+    "alta": "alta",
+}
+
+
+def raise_priority(prioridad: schemas.Prioridad) -> schemas.Prioridad:
+    """Un nivel más de prioridad (lo que ha caído en examen sube)."""
+    return _PRIORITY_UP[prioridad]
+
+
+def _priority(prioridad: schemas.Prioridad, exam_topics: list[str]) -> schemas.Prioridad:
+    return raise_priority(prioridad) if exam_topics else prioridad
+
+
+def to_capitulo(
+    chapter: Chapter, s: schemas.SintesisCapitulo, exam_topics: list[str] | None = None
+) -> schemas.Capitulo:
+    """Capítulo final a partir de la síntesis (``exam_topics``: temas que han caído)."""
+    exam_topics = exam_topics or []
     return schemas.Capitulo(
         titulo=chapter.title,
         paginas=(chapter.start_page, chapter.end_page),
-        prioridad=s.prioridad,
+        prioridad=_priority(s.prioridad, exam_topics),
         resumen=s.resumen,
         esquema=s.esquema,
         conceptos=s.conceptos,
         preguntas=s.preguntas,
         paja=s.paja,
-        ha_caido_en_examen=False,
+        ha_caido_en_examen=bool(exam_topics),
+        temas_examen=exam_topics,
     )
 
 
-def local_capitulo(chapter: Chapter, analyses: list[schemas.ChunkAnalysis]) -> schemas.Capitulo:
+def local_capitulo(
+    chapter: Chapter, analyses: list[schemas.ChunkAnalysis], exam_topics: list[str] | None = None
+) -> schemas.Capitulo:
     """Capítulo montado sin IA si la síntesis falla: une los fragmentos tal cual."""
+    exam_topics = exam_topics or []
     seen: set[str] = set()
     conceptos: list[schemas.Concepto] = []
     for a in analyses:
@@ -150,11 +180,12 @@ def local_capitulo(chapter: Chapter, analyses: list[schemas.ChunkAnalysis]) -> s
     return schemas.Capitulo(
         titulo=chapter.title,
         paginas=(chapter.start_page, chapter.end_page),
-        prioridad="alta" if imprescindibles >= 5 else "media",  # noqa: PLR2004
+        prioridad=_priority("alta" if imprescindibles >= 5 else "media", exam_topics),  # noqa: PLR2004
         resumen=" ".join(c.explicacion for c in conceptos[:3]),
         esquema=esquema,
         conceptos=conceptos,
         preguntas=[q for a in analyses for q in a.preguntas],
         paja=list(dict.fromkeys(p for a in analyses for p in a.paja)),
-        ha_caido_en_examen=False,
+        ha_caido_en_examen=bool(exam_topics),
+        temas_examen=exam_topics,
     )

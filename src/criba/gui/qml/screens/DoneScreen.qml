@@ -122,6 +122,15 @@ Item {
                 visible: backend.failedPages !== ""
                 text: qsTr("No se han podido procesar las páginas %1. El resumen lo indica con una nota; si quieres, vuelve a generarlo más tarde y solo se procesará lo que falta.").arg(backend.failedPages)
             }
+            Notice {
+                objectName: "examsFailedNotice"
+                Layout.fillWidth: true
+                Layout.maximumWidth: 720
+                Layout.topMargin: 16
+                kind: "info"
+                visible: backend.examsFailed
+                text: qsTr("No se han podido analizar los exámenes antiguos, así que los PDF van sin la etiqueta «Ha caído en examen». Si vuelves a generarlo, lo demás ya no se paga.")
+            }
 
             RowLayout {
                 Layout.topMargin: 32

@@ -101,6 +101,7 @@ ApplicationWindow {
                 backend: window.backend
                 dropHover: dropArea.containsDrag
                 onChooseFile: window.chooseFile()
+                onChooseExams: examDialog.open()
                 onGenerate: confirmStart.open()
             }
         }
@@ -179,6 +180,13 @@ ApplicationWindow {
         title: qsTr("Elige tu libro en PDF")
         nameFilters: [qsTr("Libros en PDF (*.pdf)")]
         onAccepted: { backend.closeBook(); backend.openBook(String(selectedFile)) }
+    }
+    FileDialog {
+        id: examDialog
+        title: qsTr("Elige exámenes antiguos en PDF")
+        fileMode: FileDialog.OpenFiles
+        nameFilters: [qsTr("Exámenes en PDF (*.pdf)")]
+        onAccepted: backend.addExams(selectedFiles.map(String))
     }
     FolderDialog {
         id: folderDialog

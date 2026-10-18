@@ -4,12 +4,13 @@ Ejemplo: ``python -m criba.cli libro.pdf --nivel normal --salida ./out``
 """
 
 import argparse
+import logging
 import sys
 from collections.abc import Sequence
 from pathlib import Path
 
 from criba import __version__, logs, paths, settings
-from criba.core import ingest, structure
+from criba.core import exams, ingest, structure
 from criba.core.cache import Cache
 from criba.core.cost import PRICES, to_eur
 from criba.core.errors import Cancelled, CribaError, ErrorKind
@@ -66,6 +67,9 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--capitulos", type=_chapters, default=None, help="p. ej. 1,3,4")
     parser.add_argument("--paginas", type=_range, default=None, help="p. ej. 10-80")
+    parser.add_argument(
+        "--examenes", type=Path, nargs="+", default=[], help="PDF de exámenes antiguos (opcional)"
+    )
     parser.add_argument("--solo-analisis", action="store_true", help="no llama a la IA")
     parser.add_argument("--simulado", action="store_true", help="IA simulada (gratis, para probar)")
     parser.add_argument("--si", action="store_true", help="no pide confirmación")
@@ -100,6 +104,8 @@ def _print_analysis(prep: Prepared) -> None:
             f"  [{mark}] {i}. {ch.title}  (pp. {ch.start_page}–{ch.end_page}, "
             f"{len(chunks)} fragmentos, ≈{_miles(tokens)} tokens)"
         )
+    if prep.exams:
+        print(f"Exámenes antiguos: {len(prep.exams)} ({', '.join(e.name for e in prep.exams)})")
     est = prep.estimate
     print(
         f"\nEstimación con {prep.model}: {est.calls} llamadas"
@@ -143,7 +149,24 @@ def _render_only(json_path: Path, out_dir: Path | None) -> int:
     return 0
 
 
-def main(argv: Sequence[str] | None = None) -> int:
+def _exam_problem(paths: list[Path]) -> str | None:
+    """Comprueba los exámenes antes de leer el libro; el mensaje dice cuál falla."""
+    if len(paths) > exams.MAX_EXAMS:
+        return ErrorKind.TOO_MANY_EXAMS.message
+    found = []
+    for exam in paths:
+        try:
+            found.append(exams.read_exam(exam))
+        except CribaError as err:
+            logging.getLogger("criba.cli").warning(
+                "CLI: examen %s: %s (%s)", exam, err.kind.name, err.detail
+            )
+            return f"Examen «{exam.name}»: {err.message}"
+    problem = exams.limits_problem(found)
+    return problem.message if problem else None
+
+
+def main(argv: Sequence[str] | None = None) -> int:  # noqa: PLR0911 (un código por caso)
     """Punto de entrada de la CLI. Devuelve el código de salida."""
     args = parse_args(argv)
     log = logs.setup()
@@ -154,6 +177,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     salida = args.salida or prefs.output_path
     log.info("CLI: %s nivel=%s examen=%s modelo=%s", args.pdf, args.nivel, args.examen, model)
     cancel = CancelToken()
+    if problem := _exam_problem(args.examenes):
+        print(problem, file=sys.stderr)
+        return 2
     try:
         title = args.asignatura or ingest.validate(args.pdf).title
         options = Options(
@@ -164,6 +190,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             chapters=args.capitulos,
             page_range=args.paginas,
             output_dir=salida,
+            exams=tuple(args.examenes),
         )
         with Cache(paths.cache_db()) as cache:
             prep = prepare(args.pdf, options, cache, model)
@@ -189,6 +216,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         f"Llamadas: {result.calls} ({result.cached_calls} desde la caché)"
         f" · coste real ≈{_euros(to_eur(result.cost_usd))} € ({_euros(result.cost_usd)} $)"
     )
+    if result.exams_failed:
+        print(
+            "No se han podido analizar los exámenes: los PDF van sin «Ha caído en examen».",
+            file=sys.stderr,
+        )
     if result.failed_pages:
         rangos = ", ".join(f"{a}–{b}" for a, b in result.failed_pages)
         print(f"Páginas no procesadas: {rangos}", file=sys.stderr)

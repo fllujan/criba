@@ -263,6 +263,7 @@ LABELS: dict[str, dict[str, str]] = {
         "key_ideas": "Ideas clave",
         "chapter_summary": "De qué va",
         "fell": "Ha caído en examen",
+        "fell_topics": "Qué ha caído",
         "not_processed": "Páginas no procesadas",
         "not_processed_text": "No se han podido procesar estas páginas del libro: {pages}. "
         "Revísalas directamente en el libro.",
@@ -319,6 +320,7 @@ LABELS: dict[str, dict[str, str]] = {
         "key_ideas": "Key ideas",
         "chapter_summary": "What it is about",
         "fell": "Came up in past exams",
+        "fell_topics": "What came up",
         "not_processed": "Pages not processed",
         "not_processed_text": "These pages of the book could not be processed: {pages}. "
         "Check them in the book.",

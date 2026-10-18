@@ -21,7 +21,7 @@ def app_dirs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 
 @pytest.fixture(scope="session")
 def fx(tmp_path_factory: pytest.TempPathFactory) -> Fixtures:
-    """Los seis PDF de prueba del spec §9, generados una vez por sesión."""
+    """Los PDF de prueba del spec §9 y dos exámenes, generados una vez por sesión."""
     return build_all(tmp_path_factory.mktemp("fixtures"))
 
 

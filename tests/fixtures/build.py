@@ -34,6 +34,8 @@ class Fixtures:
     protegido: Path
     danado: Path
     largo: Path
+    examen: Path
+    examen_escaneado: Path
 
 
 def _paragraph(tema: str, apartado: str, n: int) -> str:
@@ -171,13 +173,48 @@ def _damaged(path: Path) -> Path:
     return path
 
 
+EXAMEN = [
+    "Examen de Biología general · Convocatoria de junio",
+    "1. Enuncia las leyes de Mendel y explica su importancia para la genética.",
+    "2. ¿Qué es la selección natural? Pon un ejemplo de especiación.",
+    "3. Describe los ciclos biogeoquímicos.",
+    "4. Demuestra el teorema de Pitágoras.",
+]
+
+
+def _exam(path: Path) -> Path:
+    """Examen antiguo con texto: dos preguntas del libro, una de otro tema y una ajena."""
+    doc = pymupdf.open()
+    w = _Writer(doc)
+    w.new_page()
+    for i, line in enumerate(EXAMEN):
+        w.block(line, 14 if i == 0 else BODY_SIZE, bold=i == 0)
+    doc.save(path, garbage=3, deflate=True)
+    doc.close()
+    return path
+
+
+def _scanned_exam(path: Path) -> Path:
+    """Examen fotografiado: una sola página sin texto."""
+    src = pymupdf.open()
+    w = _Writer(src)
+    w.new_page()
+    w.block("Examen de septiembre", 14, bold=True)
+    w.block("1. Explica la teoría celular y los orgánulos.", BODY_SIZE)
+    out = pymupdf.open()
+    pix = src[0].get_pixmap(dpi=100)
+    out.new_page(width=A4.width, height=A4.height).insert_image(A4, pixmap=pix)
+    out.save(path, garbage=3, deflate=True)
+    return path
+
+
 def build_small(path: Path) -> Path:
     """Libro de unas 20 páginas para la prueba real contra la API (``-m live``)."""
     return _book(path, chapters=2, pages_per_chapter=10, with_toc=True)
 
 
 def build_all(folder: Path) -> Fixtures:
-    """Genera los seis PDF de prueba en ``folder``."""
+    """Genera los PDF de prueba en ``folder`` (los seis del spec y dos exámenes)."""
     folder.mkdir(parents=True, exist_ok=True)
     return Fixtures(
         con_indice=_book(folder / "con_indice.pdf", chapters=3, pages_per_chapter=8, with_toc=True),
@@ -188,6 +225,8 @@ def build_all(folder: Path) -> Fixtures:
         protegido=_protected(folder / "protegido.pdf"),
         danado=_damaged(folder / "danado.pdf"),
         largo=_book(folder / "largo.pdf", chapters=25, pages_per_chapter=20, with_toc=True),
+        examen=_exam(folder / "examen.pdf"),
+        examen_escaneado=_scanned_exam(folder / "examen_escaneado.pdf"),
     )
 
 

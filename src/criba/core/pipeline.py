@@ -25,11 +25,12 @@ from typing import TypeVar
 
 from pydantic import BaseModel
 
-from criba.core import analyze, ingest, ocr, schemas, structure
+from criba.core import analyze, exams, ingest, ocr, schemas, structure
 from criba.core.analyze import StudyOptions
 from criba.core.cache import Cache, make_key
 from criba.core.cost import ChapterPlan, ChunkPlan, Estimate, Usage, estimate, estimate_tokens
 from criba.core.errors import Cancelled, CribaError, ErrorKind
+from criba.core.exams import Exam
 from criba.core.llm import LLMCallError, LLMClient, LLMRequest, Result, structured_call
 from criba.render import render_book
 
@@ -130,6 +131,7 @@ class Options:
     chapters: tuple[int, ...] | None = None  # índices de los capítulos detectados
     page_range: tuple[int, int] | None = None
     output_dir: Path = Path()
+    exams: tuple[Path, ...] = ()  # exámenes antiguos (RF-09)
 
     def as_dict(self) -> dict[str, object]:
         """Opciones serializables (para el registro de trabajos)."""
@@ -141,6 +143,7 @@ class Options:
             "chapters": list(self.chapters) if self.chapters is not None else None,
             "page_range": list(self.page_range) if self.page_range else None,
             "output_dir": str(self.output_dir),
+            "exams": [str(p) for p in self.exams],
         }
 
 
@@ -156,6 +159,7 @@ class Prepared:
     model: str
     ocr_pending: list[list[int]]  # lotes de OCR que faltan (las páginas se guardan una a una)
     estimate: Estimate
+    exams: list[Exam] = field(default_factory=list)
 
     @property
     def scanned_pages(self) -> list[int]:
@@ -176,6 +180,7 @@ class RunResult:
     calls: int
     cached_calls: int
     failed_pages: list[tuple[int, int]] = field(default_factory=list)
+    exams_failed: bool = False  # los exámenes no se pudieron analizar: van sin etiqueta
 
 
 # --- Utilidades ----------------------------------------------------------------------
@@ -224,9 +229,41 @@ def _ocr_key(prep: Prepared, page: int) -> str:
     return make_key(prep.book.info.sha256, f"ocr-p{page}", analyze.prompt("ocr").id, prep.model)
 
 
-def _chapter_fragment(chapter: structure.Chapter, analyses: list[schemas.ChunkAnalysis]) -> str:
-    digest = make_key(*(a.model_dump_json() for a in analyses))[:16]
+def _chapter_fragment(
+    chapter: structure.Chapter,
+    analyses: list[schemas.ChunkAnalysis],
+    questions: list[schemas.PreguntaExamen] | None = None,
+) -> str:
+    parts = [a.model_dump_json() for a in analyses]
+    if questions:  # sin exámenes, la clave es la de siempre (lo ya pagado sirve)
+        parts += [analyze.prompt("exam_topics").id, *(q.model_dump_json() for q in questions)]
+    digest = make_key(*parts)[:16]
     return f"cap-{chapter.start_page}-{chapter.end_page}-{digest}"
+
+
+def exams_key(prep: "Prepared") -> str:
+    """Clave de caché del análisis de los exámenes.
+
+    No depende del nivel ni del tipo de examen (el prompt no los usa): cambiarlos no
+    obliga a pagar otra vez este análisis.
+    """
+    return make_key(
+        prep.book.info.sha256,
+        f"examenes-{exams.fingerprint(prep.selected, prep.exams)}",
+        analyze.prompt("exams").id,
+        prep.model,
+        prep.study.idioma,
+    )
+
+
+def _load_exams(paths: tuple[Path, ...], loaded: list[Exam]) -> list[Exam]:
+    """Lee los exámenes que faltan; los ya leídos se reutilizan."""
+    known = {e.path: e for e in loaded}
+    out: dict[str, Exam] = {}
+    for path in dict.fromkeys(paths):
+        exam = known.get(path) or exams.read_exam(path)
+        out.setdefault(exam.sha256, exam)  # el mismo examen dos veces cuenta una
+    return list(out.values())
 
 
 def chapter_chunks(book: ingest.Book, chapter: structure.Chapter) -> list[structure.Chunk]:
@@ -278,8 +315,14 @@ def prepare(
     return replan(prep, options, cache)
 
 
-def replan(prep: Prepared, options: Options, cache: Cache) -> Prepared:
-    """Recalcula selección, OCR pendiente y estimación con otras opciones (sin releer el PDF)."""
+def replan(
+    prep: Prepared, options: Options, cache: Cache, exam_files: list[Exam] | None = None
+) -> Prepared:
+    """Recalcula selección, OCR pendiente y estimación con otras opciones (sin releer el PDF).
+
+    ``exam_files``: exámenes ya leídos (la interfaz los lee al añadirlos); si no se
+    pasan, se leen los de ``options.exams`` que falten.
+    """
     book = prep.book
     language = options.idioma or ingest.detect_language(book)
     study = StudyOptions(options.asignatura, options.nivel, options.tipo_examen, language)
@@ -287,6 +330,10 @@ def replan(prep: Prepared, options: Options, cache: Cache) -> Prepared:
         book, prep.chapters, [], language, study, prep.model, [], Estimate(model=prep.model)
     )
     new.selected = _select(prep.chapters, options)
+    loaded = _load_exams(options.exams, prep.exams if exam_files is None else exam_files)
+    new.exams = [e for e in loaded if e.sha256 != book.info.sha256]  # el libro no es un examen
+    if problem := exams.limits_problem(new.exams):
+        raise CribaError(problem)
 
     # OCR: lo que ya está en caché se aplica ahora (gratis) y no se vuelve a pedir.
     selected_pages = {p for c in new.selected for p in range(c.start_page, c.end_page + 1)}
@@ -315,14 +362,29 @@ def _book_key(prep: Prepared, capitulos: list[schemas.Capitulo]) -> str:
     return _key(prep, f"libro-{digest}", "synthesize_book")
 
 
+def _exam_topics(prep: Prepared, cache: Cache) -> exams.Topics | None:
+    """Lo que ha caído, si el análisis de los exámenes ya está en caché (``None`` si no)."""
+    if not prep.exams:
+        return {}
+    context = {"capitulos": len(prep.selected)}
+    hit = _cached(cache, exams_key(prep), schemas.AnalisisExamenes, context)
+    return exams.topics_by_chapter(hit) if hit else None
+
+
 def _estimate(prep: Prepared, cache: Cache) -> Estimate:
-    """Estimación con lo que ya está en caché descontado (síntesis incluidas)."""
+    """Estimación con lo que ya está en caché descontado (síntesis incluidas).
+
+    Con exámenes pendientes de analizar no se sabe qué capítulos cambiarán, así que
+    ninguna síntesis cuenta como gratis: la estimación queda por lo alto.
+    """
     pending = {p for batch in prep.ocr_pending for p in batch}
+    topics = _exam_topics(prep, cache)
     plans: list[ChapterPlan] = []
     capitulos: list[schemas.Capitulo] | None = []
-    for ch in prep.selected:
+    for i, ch in enumerate(prep.selected):
         chunks = chapter_chunks(prep.book, ch)
         context = {"paginas": (ch.start_page, ch.end_page)}
+        questions = (topics or {}).get(i, [])
         analyses = [
             _cached(cache, _key(prep, c.id, "analyze_chunk"), schemas.ChunkAnalysis, context)
             for c in chunks
@@ -336,21 +398,36 @@ def _estimate(prep: Prepared, cache: Cache) -> Estimate:
             chunk_plans.append(ChunkPlan(missing * OCR_TOKENS_PER_PAGE, missing))
         synthesis = None
         done = [a for a in analyses if a is not None]
-        if chunks and not missing and len(done) == len(chunks):
-            key = _key(prep, _chapter_fragment(ch, done), "synthesize_chapter")
+        if topics is not None and chunks and not missing and len(done) == len(chunks):
+            key = _key(prep, _chapter_fragment(ch, done, questions), "synthesize_chapter")
             synthesis = _cached(cache, key, schemas.SintesisCapitulo, context)
         plans.append(ChapterPlan(chunk_plans, cached=synthesis is not None))
         if capitulos is not None and chunk_plans:
             capitulos = (
-                None if synthesis is None else [*capitulos, analyze.to_capitulo(ch, synthesis)]
+                None
+                if synthesis is None
+                else [
+                    *capitulos,
+                    analyze.to_capitulo(ch, synthesis, exams.topic_names(questions)),
+                ]
             )
     book_cached = (
         bool(capitulos) and capitulos is not None and cache.has(_book_key(prep, capitulos))
     )
     system = max(
         estimate_tokens(analyze.system_for(name, prep.study))
-        for name in ("analyze_chunk", "synthesize_chapter", "synthesize_book")
+        for name in ("analyze_chunk", "synthesize_chapter", "synthesize_book", "exams")
     )
+    exam_plan = None
+    if prep.exams:
+        text = estimate_tokens(exams.chapter_list(prep.selected))
+        text += sum(estimate_tokens(e.text) for e in prep.exams)
+        exam_plan = (
+            text,
+            sum(len(e.scanned) for e in prep.exams),
+            sum(e.pages for e in prep.exams),
+            topics is not None,
+        )
     return estimate(
         model=prep.model,
         level=prep.study.nivel,
@@ -358,6 +435,7 @@ def _estimate(prep: Prepared, cache: Cache) -> Estimate:
         chapters=plans,
         book_cached=book_cached,
         ocr_batches=[(len(b), False) for b in prep.ocr_pending],
+        exams=exam_plan,
     )
 
 
@@ -427,6 +505,16 @@ class _Runner:
             self.last = progress
             if self.on_progress:
                 self.on_progress(progress)
+
+    def cached(self, key: str, schema: type[M], context: Mapping[str, object]) -> M | None:
+        """Resultado ya pagado, si está en la caché (cuenta como llamada gratis)."""
+        hit = self.cache.get(key)
+        if hit is None:
+            return None
+        with self._lock:
+            self.calls += 1
+            self.cached_calls += 1
+        return schema.model_validate_json(hit[0], context=context)
 
     def call(self, key: str, kind: str, request: LLMRequest, schema: type[M]) -> M:
         """Llamada con caché: si ya se pagó, se reutiliza."""
@@ -565,7 +653,7 @@ def _run(r: _Runner, options: Options) -> RunResult:  # noqa: PLR0915 (orquestac
     # Etapa 4: fragmentos (después del OCR, que añade texto).
     chunks = {i: chapter_chunks(book, ch) for i, ch in enumerate(prep.selected)}
     all_chunks = [(i, c) for i, cs in chunks.items() for c in cs]
-    total_calls = len(all_chunks) + len(prep.selected) + 1
+    total_calls = len(all_chunks) + len(prep.selected) + 1 + (1 if prep.exams else 0)
     analyses: dict[str, schemas.ChunkAnalysis] = {}
     failed: list[tuple[int, structure.Chunk]] = []
     done = 0
@@ -598,15 +686,44 @@ def _run(r: _Runner, options: Options) -> RunResult:  # noqa: PLR0915 (orquestac
             )
         )
 
+    # Exámenes antiguos: una llamada que va a la vez que los fragmentos.
+    topics: exams.Topics = {}
+    exams_pending = bool(prep.exams)
+    exams_unreadable = threading.Event()
+
+    def exams_one() -> None:
+        nonlocal exams_pending
+        key, context = exams_key(prep), {"capitulos": len(prep.selected)}
+        result = r.cached(key, schemas.AnalisisExamenes, context)
+        if result is None:
+            try:  # las páginas escaneadas se leen ahora del disco
+                request = exams.exams_request(prep.study, prep.selected, prep.exams)
+            except Exception as exc:  # sin exámenes, el libro sigue adelante
+                log.warning("No se han podido leer los exámenes: %r", exc)
+                exams_pending = False
+                exams_unreadable.set()
+                return
+            try:
+                result = r.call(key, "exams", request, schemas.AnalisisExamenes)
+            except LLMCallError as exc:
+                log.warning("Análisis de los exámenes fallido: %s", exc)
+                return
+        topics.update(exams.topics_by_chapter(result))
+        exams_pending = False
+
     # Etapa 5: map.
     r.emit(Progress(Stage.ANALYZING, 0, len(all_chunks), chapters=len(prep.selected)))
-    r.parallel([partial(map_one, i, c) for i, c in all_chunks])
+    tasks: list[Callable[[], None]] = [partial(map_one, i, c) for i, c in all_chunks]
+    r.parallel([exams_one, *tasks] if prep.exams else tasks)
     # RNF-05: los fallidos se reintentan una vez al final.
     retry, failed[:] = list(failed), []
     for i, c in retry:
         r.check()
         done -= 1
         map_one(i, c)
+    if exams_pending:
+        r.check()
+        exams_one()
 
     # Etapa 6: reduce por capítulo.
     capitulos: dict[int, schemas.Capitulo] = {}
@@ -618,17 +735,20 @@ def _run(r: _Runner, options: Options) -> RunResult:  # noqa: PLR0915 (orquestac
         nonlocal synth_done
         chapter = prep.selected[ch_index]
         parts = [analyses[c.id] for c in chunks[ch_index] if c.id in analyses]
+        questions = topics.get(ch_index, [])
+        names = exams.topic_names(questions)
         if parts:
-            request = analyze.chapter_request(prep.study, chapter, parts)
-            key = _key(prep, _chapter_fragment(chapter, parts), "synthesize_chapter")
+            note = exams.topics_note(questions) if questions else ""
+            request = analyze.chapter_request(prep.study, chapter, parts, note)
+            key = _key(prep, _chapter_fragment(chapter, parts, questions), "synthesize_chapter")
             try:
                 s = r.call(key, "chapter", request, schemas.SintesisCapitulo)
-                capitulos[ch_index] = analyze.to_capitulo(chapter, s)
+                capitulos[ch_index] = analyze.to_capitulo(chapter, s, names)
             except LLMCallError as exc:
                 log.warning(
                     "Síntesis del capítulo %r fallida, se monta sin IA: %s", chapter.title, exc
                 )
-                capitulos[ch_index] = analyze.local_capitulo(chapter, parts)
+                capitulos[ch_index] = analyze.local_capitulo(chapter, parts, names)
         with counter:
             synth_done += 1
             current = synth_done
@@ -714,4 +834,5 @@ def _run(r: _Runner, options: Options) -> RunResult:  # noqa: PLR0915 (orquestac
         calls=r.calls,
         cached_calls=r.cached_calls,
         failed_pages=libro.paginas_no_procesadas,
+        exams_failed=exams_pending or exams_unreadable.is_set(),
     )

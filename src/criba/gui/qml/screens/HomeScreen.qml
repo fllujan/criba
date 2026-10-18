@@ -12,12 +12,16 @@ Item {
     required property var backend
     property bool dropHover: false
     signal chooseFile()
+    signal chooseExams()
     signal generate()
 
     readonly property int sideWidth: Math.max(300, Math.min(400, width * 0.3))
     readonly property int sideX: width - sideWidth - 32
     readonly property int mainWidth: sideX - Theme.contentX - 48
     readonly property bool bookError: backend.error !== "" && backend.errorWhere === "book"
+    readonly property string examErrorText: backend.examErrorFile !== ""
+        ? qsTr("No se ha podido añadir «%1»: %2").arg(backend.examErrorFile).arg(Msg.error(backend.examError))
+        : Msg.error(backend.examError)
 
     // --- Sin libro: zona de arrastre ------------------------------------------------
     Item {
@@ -119,6 +123,43 @@ Item {
                         text: qsTr("Página a página, sin conexión. En un libro largo tarda unos segundos.")
                     }
                 }
+            }
+
+            // Exámenes antiguos (RF-09): opcional, antes o después del libro.
+            ExamList {
+                objectName: "examList"
+                Layout.fillWidth: true
+                Layout.topMargin: 16
+                visible: count > 0
+                model: backend.exams
+                onRemoveRequested: (i) => backend.removeExam(i)
+            }
+            LinkButton {
+                objectName: "addExamsLink"
+                Layout.topMargin: backend.examCount > 0 ? 8 : 16
+                visible: backend.examCount < backend.maxExams
+                enabled: !backend.examsLoading && !backend.loading
+                text: backend.examsLoading ? qsTr("Leyendo los exámenes…")
+                    : backend.examCount === 0 ? qsTr("Añadir exámenes antiguos (opcional)")
+                    : qsTr("Añadir más exámenes")
+                onClicked: screen.chooseExams()
+            }
+            Body {
+                Layout.fillWidth: true
+                Layout.topMargin: 4
+                visible: backend.examCount === 0
+                secondary: true
+                font.pixelSize: Theme.caption
+                text: qsTr("Los temas que hayan caído subirán de prioridad y llevarán la etiqueta «Ha caído en examen».")
+            }
+            Notice {
+                Layout.fillWidth: true
+                Layout.topMargin: 16
+                visible: backend.examError !== ""
+                text: screen.examErrorText
+                actions: [
+                    QuietButton { text: qsTr("Entendido"); onClicked: backend.dismissExamError() }
+                ]
             }
 
             Notice {
@@ -376,6 +417,55 @@ Item {
                         : qsTr("Mezcla de preguntas tipo test y de desarrollo.")
                 }
 
+                ColumnLayout {
+                    objectName: "sideExams"
+                    Layout.fillWidth: true
+                    Layout.topMargin: 24
+                    spacing: 0
+                    Text {
+                        text: qsTr("Exámenes antiguos")
+                        color: Theme.ink
+                        font.family: Theme.sans
+                        font.pixelSize: Theme.caption
+                        font.weight: Font.DemiBold
+                    }
+                    Body {
+                        Layout.fillWidth: true
+                        Layout.topMargin: 4
+                        secondary: true
+                        font.pixelSize: Theme.caption
+                        text: backend.examCount === 0
+                              ? qsTr("Opcional. Los temas que hayan caído suben de prioridad y llevan la etiqueta «Ha caído en examen».")
+                              : qsTr("Los temas que hayan caído suben de prioridad y llevan la etiqueta «Ha caído en examen».")
+                    }
+                    ExamList {
+                        Layout.fillWidth: true
+                        Layout.topMargin: 8
+                        visible: count > 0
+                        model: backend.exams
+                        onRemoveRequested: (i) => backend.removeExam(i)
+                    }
+                    LinkButton {
+                        Layout.topMargin: 8
+                        visible: backend.examCount < backend.maxExams
+                        enabled: !backend.examsLoading && !backend.loading
+                        text: backend.examsLoading ? qsTr("Leyendo los exámenes…")
+                            : backend.examCount === 0 ? qsTr("Añadir exámenes antiguos")
+                            : qsTr("Añadir más exámenes")
+                        onClicked: screen.chooseExams()
+                    }
+                    Notice {
+                        Layout.fillWidth: true
+                        Layout.topMargin: 12
+                        marginMark: false
+                        visible: backend.examError !== ""
+                        text: screen.examErrorText
+                        actions: [
+                            QuietButton { text: qsTr("Entendido"); onClicked: backend.dismissExamError() }
+                        ]
+                    }
+                }
+
                 SectionHead {
                     Layout.fillWidth: true
                     Layout.topMargin: 40
@@ -416,6 +506,12 @@ Item {
                 }
                 Body {
                     Layout.fillWidth: true
+                    visible: backend.examCount > 0 && backend.estimateCalls > 0
+                    text: qsTr("Incluye el análisis de %1.").arg(Msg.exams(backend.examCount))
+                    font.pixelSize: Theme.caption
+                }
+                Body {
+                    Layout.fillWidth: true
                     Layout.topMargin: 12
                     secondary: true
                     font.pixelSize: Theme.caption
@@ -452,7 +548,7 @@ Item {
                     Layout.fillWidth: true
                     Layout.topMargin: 32
                     text: qsTr("Generar resumen y esquema")
-                    enabled: backend.estimateCalls > 0 && !backend.estimating && backend.subject.trim() !== ""
+                    enabled: backend.estimateCalls > 0 && !backend.estimating && !backend.examsLoading && backend.subject.trim() !== ""
                     onClicked: screen.generate()
                 }
             }

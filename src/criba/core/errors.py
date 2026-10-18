@@ -38,6 +38,15 @@ class ErrorKind(Enum):
         (Action.CHOOSE_OTHER_FILE,),
     )
     NO_TEXT = ("No se ha encontrado texto en este PDF.", (Action.CHOOSE_OTHER_FILE,))
+    EXAM_TOO_LONG = (
+        "Este examen tiene más de 50 páginas. Añade solo exámenes, no libros ni apuntes.",
+        (Action.CHOOSE_OTHER_FILE,),
+    )
+    TOO_MANY_EXAMS = ("Añade como mucho 10 exámenes.", (Action.CHOOSE_OTHER_FILE,))
+    EXAMS_TOO_BIG = (
+        "Entre todos, los exámenes pasan de 60 páginas o de 20 escaneadas. Quita alguno.",
+        (Action.CHOOSE_OTHER_FILE,),
+    )
     INVALID_KEY = ("La clave de API no es válida o ha caducado.", (Action.CHANGE_KEY,))
     NO_CREDIT = (
         "Tu cuenta de Anthropic no tiene saldo suficiente.",

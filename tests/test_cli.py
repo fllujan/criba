@@ -92,3 +92,29 @@ def test_chapter_and_range_parsing() -> None:
     with pytest.raises(argparse.ArgumentTypeError):
         cli._chapters("a,b")
     assert cli._euros(1234.5) == "1.234,50"
+
+
+def test_exams_option_marks_what_came_up(fx, tmp_path, capsys, app_dirs) -> None:
+    out = tmp_path / "salida"
+    code = cli.main(
+        [str(fx.con_indice), "--simulado", "--si", "--salida", str(out), "--asignatura", "Bio",
+         "--examenes", str(fx.examen), str(fx.examen_escaneado)]
+    )  # fmt: skip
+    assert code == 0
+    text = capsys.readouterr().out
+    assert "Exámenes antiguos: 2" in text
+    data = (out / "Bio - datos.json").read_text(encoding="utf-8")
+    assert '"ha_caido_en_examen": true' in data
+
+
+def test_bad_exam_says_which_file(fx, tmp_path, capsys, app_dirs) -> None:
+    code = cli.main([str(fx.con_indice), "--solo-analisis", "--examenes", str(fx.protegido)])
+    assert code == 2
+    err = capsys.readouterr().err
+    assert "protegido.pdf" in err and "contraseña" in err
+
+
+def test_too_many_exams(fx, capsys, app_dirs) -> None:
+    code = cli.main([str(fx.con_indice), "--solo-analisis", "--examenes", *[str(fx.examen)] * 11])
+    assert code == 2
+    assert "10 exámenes" in capsys.readouterr().err

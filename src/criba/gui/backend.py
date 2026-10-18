@@ -30,6 +30,7 @@ from criba.core.analyze import LANGUAGE_NAMES
 from criba.core.cache import Cache
 from criba.core.cost import PRICES, to_eur
 from criba.core.errors import Cancelled, CribaError, ErrorKind
+from criba.core.exams import MAX_EXAMS, Exam, limits_problem, read_exam
 from criba.core.llm import AnthropicClient, LLMClient, check_api_key
 from criba.core.pipeline import (
     CancelToken,
@@ -67,6 +68,7 @@ class Done:
     outline: Path
     cost_usd: float
     failed_pages: list[tuple[int, int]]
+    exams_failed: bool = False
 
 
 def _error_kind(exc: BaseException) -> ErrorKind:
@@ -74,6 +76,20 @@ def _error_kind(exc: BaseException) -> ErrorKind:
         return exc.kind
     log.error("Error inesperado", exc_info=exc)
     return ErrorKind.PROCESSING_FAILED
+
+
+def _read_exams(paths: list[Path]) -> tuple[list[Exam], tuple[str, ErrorKind] | None]:
+    """Lee los exámenes que se puedan; del primero que falle, su nombre y el motivo."""
+    found: dict[str, Exam] = {}
+    problem: tuple[str, ErrorKind] | None = None
+    for path in paths:
+        try:
+            exam = read_exam(path)
+            found.setdefault(exam.sha256, exam)
+        except CribaError as exc:
+            log.info("Examen no válido %s: %s (%s)", path.name, exc.kind.name, exc.detail)
+            problem = problem or (path.name, exc.kind)
+    return list(found.values()), problem
 
 
 def _local_path(url_or_path: str) -> Path:
@@ -95,6 +111,7 @@ class Backend(QObject):
     historyChanged = Signal()
     noticeChanged = Signal()
     selectionChanged = Signal()
+    examsChanged = Signal()
 
     def __init__(
         self,
@@ -128,6 +145,11 @@ class Backend(QObject):
         self._exam = "mixto"
         self._page_from = 0
         self._page_to = 0
+        # Exámenes antiguos (RF-09): se leen al añadirlos; los errores van aparte.
+        self._exams: list[Exam] = []
+        self._exams_loading = False
+        self._exam_error = ""  # nombre del ErrorKind
+        self._exam_error_file = ""
         self.chapters = ChapterModel(self)
         self.chapters.selectionChanged.connect(self._schedule_replan)
         self.chapters.selectionChanged.connect(self.selectionChanged)
@@ -240,6 +262,7 @@ class Backend(QObject):
             chapters=None if all_checked else tuple(checked),
             page_range=page_range,
             output_dir=self._settings.output_path,
+            exams=tuple(e.path for e in self._exams),
         )
 
     # --- Propiedades ----------------------------------------------------------------
@@ -356,6 +379,37 @@ class Backend(QObject):
         return self._page_to
 
     pageTo = Property(int, _get_page_to, notify=bookChanged)
+
+    # Exámenes antiguos (RF-09)
+    def _get_exams(self) -> list[dict[str, Any]]:
+        return [{"name": e.name, "pages": e.pages, "scanned": len(e.scanned)} for e in self._exams]
+
+    exams = Property(list, _get_exams, notify=examsChanged)
+
+    def _get_exam_count(self) -> int:
+        return len(self._exams)
+
+    examCount = Property(int, _get_exam_count, notify=examsChanged)
+
+    def _get_max_exams(self) -> int:
+        return MAX_EXAMS
+
+    maxExams = Property(int, _get_max_exams, constant=True)
+
+    def _get_exams_loading(self) -> bool:
+        return self._exams_loading
+
+    examsLoading = Property(bool, _get_exams_loading, notify=examsChanged)
+
+    def _get_exam_error(self) -> str:
+        return self._exam_error
+
+    examError = Property(str, _get_exam_error, notify=examsChanged)
+
+    def _get_exam_error_file(self) -> str:
+        return self._exam_error_file
+
+    examErrorFile = Property(str, _get_exam_error_file, notify=examsChanged)
 
     # Estimación (RF-10)
     def _get_estimating(self) -> bool:
@@ -497,6 +551,11 @@ class Backend(QObject):
         return ", ".join(f"{a}–{b}" if a != b else str(a) for a, b in self._done.failed_pages)
 
     failedPages = Property(str, _get_failed, notify=resultChanged)
+
+    def _get_exams_failed(self) -> bool:
+        return self._done.exams_failed if self._done else False
+
+    examsFailed = Property(bool, _get_exams_failed, notify=resultChanged)
 
     # Errores y avisos (§8)
     def _get_error(self) -> str:
@@ -641,7 +700,8 @@ class Backend(QObject):
         self._open(_local_path(url), None)
 
     def _open(self, path: Path, saved: dict[str, Any] | None) -> None:
-        if self._loading or self._busy():
+        # PyMuPDF no admite dos hilos a la vez: no se lee el libro mientras se leen exámenes.
+        if self._loading or self._exams_loading or self._busy():
             return
         self._book_model = None
         self._book_language = None
@@ -664,11 +724,13 @@ class Backend(QObject):
             title = (saved or {}).get("asignatura") or ingest.validate(path).title
             options = Options(asignatura=title, idioma=language, output_dir=output_dir)
             prep = prepare(path, options, cache, model, on_progress=report)
-            return title, prep
+            # Al reanudar, los exámenes de entonces (si siguen ahí y se pueden leer).
+            found, _ = _read_exams([Path(p) for p in (saved or {}).get("exams") or []])
+            return title, prep, found
 
         self._spawn(
             job,
-            lambda r: self._book_ready(r[0], r[1], saved),
+            lambda r: self._book_ready(r[0], r[1], saved, r[2]),
             self._book_failed,
             self._book_progress,
         )
@@ -677,8 +739,21 @@ class Backend(QObject):
         self._load_fraction = p.fraction
         self.bookChanged.emit()
 
-    def _book_ready(self, title: str, prep: Prepared, saved: dict[str, Any] | None) -> None:
+    def _book_ready(
+        self,
+        title: str,
+        prep: Prepared,
+        saved: dict[str, Any] | None,
+        saved_exams: list[Exam],
+    ) -> None:
         self._prep = prep
+        if saved is not None:
+            self._exams = saved_exams
+            self._set_exam_error(None)
+        book_sha = prep.book.info.sha256
+        if any(e.sha256 == book_sha for e in self._exams):  # el libro no es un examen
+            self._exams = [e for e in self._exams if e.sha256 != book_sha]
+            self.examsChanged.emit()
         self._subject = title
         self._done = None
         saved = saved or {}
@@ -699,7 +774,7 @@ class Backend(QObject):
         )
         self.bookChanged.emit()
         self.resultChanged.emit()
-        if saved:
+        if saved or self._exams:
             self._start_replan()
         else:
             self.estimateChanged.emit()
@@ -745,6 +820,74 @@ class Backend(QObject):
             self.bookChanged.emit()
             self._schedule_replan()
 
+    # --- Exámenes antiguos (RF-09) ---------------------------------------------------
+
+    def _set_exam_error(self, kind: ErrorKind | None, file: str = "") -> None:
+        self._exam_error = kind.name if kind else ""
+        self._exam_error_file = file if kind else ""
+        self.examsChanged.emit()
+
+    @Slot(list)
+    def addExams(self, urls: list[str]) -> None:
+        """Lee los exámenes elegidos (en local, gratis) y rehace la estimación."""
+        if self._exams_loading or self._loading or self._busy():  # PyMuPDF: un hilo cada vez
+            return
+        known = {e.path for e in self._exams}
+        wanted = [p for p in dict.fromkeys(_local_path(str(u)) for u in urls) if p not in known]
+        if not wanted:
+            return
+        if len(self._exams) + len(wanted) > MAX_EXAMS:
+            self._set_exam_error(ErrorKind.TOO_MANY_EXAMS)
+            return
+        self._exams_loading = True
+        self._set_exam_error(None)
+
+        def job(_report: Report) -> object:
+            return _read_exams(wanted)
+
+        self._spawn(job, lambda r: self._exams_read(r[0], r[1]), self._exams_failed)
+
+    def _exams_read(self, found: list[Exam], problem: tuple[str, ErrorKind] | None) -> None:
+        self._exams_loading = False
+        shas = {e.sha256 for e in self._exams}
+        if self._prep is not None:
+            shas.add(self._prep.book.info.sha256)  # el propio libro no es un examen
+        added: list[Exam] = []
+        for exam in found:
+            if exam.sha256 in shas:
+                continue
+            if limits_problem([*self._exams, *added, exam]):  # no caben en una llamada
+                problem = problem or (exam.name, ErrorKind.EXAMS_TOO_BIG)
+                continue
+            shas.add(exam.sha256)
+            added.append(exam)
+        self._exams += added
+        log.info("Exámenes añadidos: %d (en total %d)", len(added), len(self._exams))
+        if problem:
+            self._set_exam_error(problem[1], problem[0])
+        else:
+            self.examsChanged.emit()
+        if added:
+            self._schedule_replan()
+
+    def _exams_failed(self, exc: BaseException) -> None:
+        self._exams_loading = False
+        self._set_exam_error(_error_kind(exc))
+
+    @Slot(int)
+    def removeExam(self, index: int) -> None:
+        """Quita un examen de la lista."""
+        if self._busy() or not 0 <= index < len(self._exams):
+            return
+        del self._exams[index]
+        self._set_exam_error(None)
+        self._schedule_replan()
+
+    @Slot()
+    def dismissExamError(self) -> None:
+        """Oculta el aviso de un examen que no se ha podido añadir."""
+        self._set_exam_error(None)
+
     def _schedule_replan(self) -> None:
         if self._prep is None or self._loading or self._cancel is not None:
             return
@@ -762,11 +905,12 @@ class Backend(QObject):
         self._estimating = True
         self.estimateChanged.emit()
         prep, options, cache = self._prep, self._options(), self._cache
+        exam_files = list(self._exams)  # ya leídos: el hilo no vuelve a abrir los PDF
         if prep.model != self._model():
             prep = replace(prep, model=self._model())
 
         def job(_report: Report) -> object:
-            return replan(prep, options, cache)
+            return replan(prep, options, cache, exam_files)
 
         self._spawn(job, self._replanned, self._replan_failed)
 
@@ -796,7 +940,7 @@ class Backend(QObject):
     @Slot()
     def start(self) -> None:
         """Empieza a procesar con la IA (después de confirmar el coste)."""
-        if self._prep is None or self._cancel is not None:
+        if self._prep is None or self._cancel is not None or self._exams_loading:
             return
         key = settings.get_api_key()
         if not key:
@@ -805,6 +949,7 @@ class Backend(QObject):
             return
         options = self._options()
         prep, cache = self._prep, self._cache
+        exam_files = list(self._exams)
         if prep.model != self._model():
             prep = replace(prep, model=self._model())
         try:
@@ -831,7 +976,7 @@ class Backend(QObject):
         )
 
         def job(report: Report) -> object:
-            fresh = replan(prep, options, cache)
+            fresh = replan(prep, options, cache, exam_files)
             return run(fresh, options, llm, cache, on_progress=report, cancel=token)
 
         self._spawn(job, self._run_done, self._run_failed, self._run_progress)
@@ -851,7 +996,11 @@ class Backend(QObject):
             result.cached_calls,
         )
         self._done = Done(
-            result.summary_pdf, result.outline_pdf, result.cost_usd, result.failed_pages
+            result.summary_pdf,
+            result.outline_pdf,
+            result.cost_usd,
+            result.failed_pages,
+            result.exams_failed,
         )
         self._fraction = 1.0
         self.progressChanged.emit()
@@ -900,6 +1049,8 @@ class Backend(QObject):
         self._done = None
         self._progress = None
         self.resultChanged.emit()
+        self._exams = []
+        self._set_exam_error(None)
         self.closeBook()
         self._set_screen("home")
 

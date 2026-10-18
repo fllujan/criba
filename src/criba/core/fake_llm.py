@@ -18,6 +18,9 @@ from criba.core.cost import DEFAULT_MODEL, Usage, estimate_tokens
 from criba.core.llm import Image, LLMCallError, LLMRequest, RawResponse
 
 _PAGE = re.compile(r"^\[p\. (\d+)\]$")
+_CHAPTER_LINE = re.compile(r"^(\d+)\. (.+)$")
+_QUESTION = re.compile(r"^\d+[.)]\s+(.+)$")
+_WORD = re.compile(r"\w{5,}")
 
 
 @dataclass
@@ -58,6 +61,8 @@ class FakeLLMClient:
                 return _chapter(json.loads(request.content[-1]))  # type: ignore[arg-type]
             case schemas.SintesisLibro:
                 return _book(json.loads(request.content[-1]))  # type: ignore[arg-type]
+            case schemas.AnalisisExamenes:
+                return _exams([c for c in request.content if isinstance(c, str)])
             case schemas.OcrResultado:
                 return {
                     "paginas": [
@@ -164,6 +169,39 @@ def _chapter(analyses: list[dict[str, Any]]) -> dict[str, Any]:
         "preguntas": preguntas,
         "paja": sorted({p for a in analyses for p in a["paja"]})[:8],
     }
+
+
+def _words(text: str) -> set[str]:
+    return {w.casefold() for w in _WORD.findall(text)}
+
+
+def _exams(content: list[str]) -> dict[str, Any]:
+    """Sitúa cada pregunta numerada en el capítulo con más palabras en común (o en ninguno).
+
+    ``content[1]`` es la lista de capítulos; los exámenes vienen después. Las imágenes
+    no se leen: la IA simulada no ve.
+    """
+    chapters = [
+        (int(m[1]), _words(m[2]), m[2].split(" (pp.")[0])
+        for line in content[1].splitlines()
+        if (m := _CHAPTER_LINE.match(line))
+    ]
+    preguntas = []
+    for block in content[2:]:
+        for line in block.splitlines():
+            if not (q := _QUESTION.match(line.strip())):
+                continue
+            words = _words(q[1])
+            number, common, title = max(chapters, key=lambda c: len(c[1] & words))
+            hit = len(common & words) >= 1
+            preguntas.append(
+                {
+                    "pregunta": q[1],
+                    "tema": " ".join(q[1].split()[:5]).rstrip(",.;:?") if hit else title,
+                    "capitulo": number if hit else None,
+                }
+            )
+    return {"preguntas": preguntas}
 
 
 def _book(chapters: list[dict[str, Any]]) -> dict[str, Any]:

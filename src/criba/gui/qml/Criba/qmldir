@@ -17,3 +17,4 @@ ConfirmPopup 1.0 ConfirmPopup.qml
 Body 1.0 Body.qml
 ChapterRow 1.0 ChapterRow.qml
 InkBar 1.0 InkBar.qml
+ExamList 1.0 ExamList.qml
