@@ -25,6 +25,17 @@ def _status(cls, code, body=None):
     return cls("fallo", response=httpx2.Response(code, request=_REQUEST), body=body)
 
 
+class _Stream:
+    def __init__(self, msg):
+        self.msg = msg
+
+    def __iter__(self):
+        return iter([SimpleNamespace(type="message_start")])
+
+    def get_final_message(self):
+        return self.msg
+
+
 class FakeSDK:
     """Imita ``anthropic.Anthropic`` lo justo para el cliente."""
 
@@ -56,7 +67,7 @@ class FakeSDK:
             model=params["model"],
             stop_reason=stop,
         )
-        yield SimpleNamespace(get_final_message=lambda: msg)
+        yield _Stream(msg)
 
 
 def _client(outcomes, model="claude-sonnet-5-5"):

@@ -6,6 +6,7 @@ fallar, se lanza ``LLMCallError`` y el fragmento queda marcado como fallido (RNF
 """
 
 import base64
+import dataclasses
 import json
 import logging
 import re
@@ -20,12 +21,14 @@ import anthropic
 from pydantic import BaseModel, ValidationError
 
 from criba.core.cost import DEFAULT_MODEL, PRICES, Usage
-from criba.core.errors import CribaError, ErrorKind
+from criba.core.errors import Cancelled, CribaError, ErrorKind
 
 log = logging.getLogger(__name__)
 
 BACKOFF_SECONDS = (1, 2, 4, 8, 16)
 RETRYABLE_STATUS = {429, 500, 529}
+FATAL_STATUS = {404}  # p. ej. modelo inexistente: fallaría igual en todos los fragmentos
+MAX_OUTPUT_TOKENS = 128_000
 DEFAULT_EFFORT = "medium"
 FALLBACK_BETA = "server-side-fallback-2026-07-01"
 # Modelos que admiten el reintento automático en otro modelo si el primero se niega.
@@ -83,6 +86,18 @@ class Image:
 Content = list[str | Image]
 
 
+class Waiter(Protocol):
+    """Señal de parada (``threading.Event`` o similar)."""
+
+    def is_set(self) -> bool:
+        """Indica si hay que parar."""
+        ...
+
+    def wait(self, timeout: float | None = None) -> bool:
+        """Espera hasta ``timeout`` segundos; ``True`` si hay que parar."""
+        ...
+
+
 @dataclass(frozen=True, slots=True)
 class LLMRequest:
     """Una llamada a la IA con salida estructurada."""
@@ -93,6 +108,7 @@ class LLMRequest:
     max_tokens: int = 32_000
     context: dict[str, Any] = field(default_factory=dict)  # contexto de validación
     retry: tuple[str, str] | None = None  # (respuesta anterior, error) para corregir
+    stop: Waiter | None = field(default=None, compare=False)  # cancelar sin esperar
 
 
 @dataclass(frozen=True, slots=True)
@@ -118,6 +134,10 @@ class LLMClient(Protocol):
 class LLMCallError(Exception):
     """La llamada no dio un resultado válido. El fragmento se reintenta al final."""
 
+    def __init__(self, message: str, usage: Usage | None = None) -> None:
+        super().__init__(message)
+        self.usage = usage or Usage()
+
 
 @dataclass(slots=True)
 class Result[M: BaseModel]:
@@ -139,31 +159,45 @@ def _errors_for_model(exc: ValidationError) -> str:
 def structured_call[T: BaseModel](
     client: LLMClient, request: LLMRequest, schema: type[T]
 ) -> Result[T]:
-    """Llama, valida y, si no cumple el esquema, reintenta una vez con el error."""
+    """Llama, valida y, si la respuesta no sirve, reintenta una vez.
+
+    - Respuesta cortada por ``max_tokens``: se repite con más margen.
+    - Respuesta vacía: se repite la misma petición.
+    - JSON que no cumple el esquema: se repite incluyendo el error para que lo corrija.
+
+    Los tokens de todos los intentos se cuentan, también si al final falla.
+    """
     usage = Usage()
     current = request
     for attempt in (1, 2):
-        raw = client.complete(current)
+        try:
+            raw = client.complete(current)
+        except LLMCallError as exc:
+            exc.usage += usage
+            raise
+        except CribaError as exc:
+            exc.usage = usage
+            raise
         usage += raw.usage
         if raw.stop_reason == "refusal":
-            raise LLMCallError("la IA ha rechazado la petición")
-        try:
-            value = schema.model_validate_json(raw.text, context=request.context)
-        except ValidationError as exc:
-            log.warning("Respuesta no válida (intento %d): %s", attempt, exc.error_count())
-            if attempt == 2:  # noqa: PLR2004
-                raise LLMCallError(f"respuesta no válida tras reintentar: {exc}") from exc
-            current = LLMRequest(
-                system=request.system,
-                content=request.content,
-                schema=request.schema,
-                max_tokens=request.max_tokens,
-                context=request.context,
-                retry=(raw.text, _errors_for_model(exc)),
-            )
-            continue
-        return Result(value=value, usage=usage, model=raw.model)
-    raise AssertionError("inalcanzable")  # pragma: no cover
+            raise LLMCallError("la IA ha rechazado la petición", usage)
+        if raw.stop_reason == "max_tokens":
+            problem = "respuesta cortada por max_tokens"
+            bigger = min(MAX_OUTPUT_TOKENS, round(current.max_tokens * 1.5))
+            current = dataclasses.replace(request, max_tokens=bigger, retry=None)
+        elif not raw.text.strip():
+            problem = "respuesta vacía"
+            current = dataclasses.replace(request, retry=None)
+        else:
+            try:
+                value = schema.model_validate_json(raw.text, context=request.context)
+            except ValidationError as exc:
+                problem = f"respuesta no válida: {exc}"
+                current = dataclasses.replace(request, retry=(raw.text, _errors_for_model(exc)))
+            else:
+                return Result(value=value, usage=usage, model=raw.model)
+        log.warning("Intento %d sin resultado: %s", attempt, problem[:200])
+    raise LLMCallError(f"sin resultado válido tras reintentar ({problem[:200]})", usage)
 
 
 # --- Cliente real de Anthropic ---------------------------------------------------------
@@ -174,8 +208,11 @@ Sleep = Callable[[float], None]
 def _is_billing(exc: anthropic.APIStatusError) -> bool:
     body = exc.body if isinstance(exc.body, dict) else {}
     error = body.get("error") if isinstance(body.get("error"), dict) else {}
-    return exc.status_code == 402 or (  # noqa: PLR2004
-        isinstance(error, dict) and error.get("type") == "billing_error"
+    message = f"{exc.message} {error.get('message', '') if isinstance(error, dict) else ''}"
+    return (
+        exc.status_code == 402  # noqa: PLR2004
+        or (isinstance(error, dict) and error.get("type") == "billing_error")
+        or "credit balance" in message.lower()
     )
 
 
@@ -256,6 +293,12 @@ class AnthropicClient:
 
     def _once(self, request: LLMRequest) -> RawResponse:
         with self._sdk.beta.messages.stream(**self._params(request)) as stream:
+            # Se lee el flujo para poder cancelar a mitad de respuesta (RF-12).
+            for _event in stream:
+                if request.stop is not None and request.stop.is_set():
+                    raise Cancelled
+            if request.stop is not None and request.stop.is_set():
+                raise Cancelled
             message = stream.get_final_message()
         text = "".join(b.text for b in message.content if b.type == "text")
         u = message.usage
@@ -295,6 +338,8 @@ class AnthropicClient:
             except anthropic.APIStatusError as exc:
                 if _is_billing(exc):
                     raise CribaError(ErrorKind.NO_CREDIT, detail=repr(exc)) from exc
+                if exc.status_code in FATAL_STATUS:
+                    raise CribaError(ErrorKind.SERVICE_ERROR, detail=repr(exc)) from exc
                 if exc.status_code not in RETRYABLE_STATUS:
                     raise LLMCallError(f"error {exc.status_code}: {exc.message}") from exc
                 last = exc
@@ -302,7 +347,11 @@ class AnthropicClient:
             if delay is None:
                 break
             log.warning("Reintento en %d s tras %r", delay, last)
-            self._sleep(delay)
+            if request.stop is not None:
+                if request.stop.wait(delay):
+                    raise Cancelled
+            else:
+                self._sleep(delay)
         raise CribaError(kind, detail=repr(last))
 
 

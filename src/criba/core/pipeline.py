@@ -29,12 +29,14 @@ from criba.core import analyze, ingest, ocr, schemas, structure
 from criba.core.analyze import StudyOptions
 from criba.core.cache import Cache, make_key
 from criba.core.cost import ChapterPlan, ChunkPlan, Estimate, Usage, estimate, estimate_tokens
-from criba.core.errors import CribaError, ErrorKind
+from criba.core.errors import Cancelled, CribaError, ErrorKind
 from criba.core.llm import LLMCallError, LLMClient, LLMRequest, Result, structured_call
 
 log = logging.getLogger(__name__)
 
 PARALLEL_CALLS = 4
+RATE_LIMIT_WAIT = 60.0  # segundos de espera si el servicio sigue saturado tras los reintentos
+RATE_LIMIT_ROUNDS = 10
 OCR_TOKENS_PER_PAGE = 700  # texto estimado de una página escaneada, antes del OCR
 MIN_CHAPTER_TOKENS = 120  # por debajo (portadas, páginas en blanco) no se gasta en la IA
 M = TypeVar("M", bound=BaseModel)
@@ -63,6 +65,7 @@ class Progress:
     chapter_title: str | None = None
     cost_usd: float = 0.0
     eta_seconds: float | None = None
+    notice: str | None = None  # p. ej. "rate_limited": saturado, se reintentará solo
 
     @property
     def fraction(self) -> float:
@@ -71,10 +74,6 @@ class Progress:
 
 
 OnProgress = Callable[[Progress], None]
-
-
-class Cancelled(Exception):  # noqa: N818 (es un evento, no un error)
-    """El usuario ha cancelado. Lo procesado está en la caché."""
 
 
 class CancelToken:
@@ -91,6 +90,11 @@ class CancelToken:
     def cancelled(self) -> bool:
         """``True`` si se ha pedido cancelar."""
         return self._event.is_set()
+
+    @property
+    def event(self) -> threading.Event:
+        """Evento subyacente (para esperas que se cortan al cancelar)."""
+        return self._event
 
     def check(self) -> None:
         """Lanza ``Cancelled`` si se ha pedido cancelar."""
@@ -133,7 +137,7 @@ class Prepared:
     language: str
     study: StudyOptions
     model: str
-    ocr_pending: list[list[int]]  # lotes de OCR que faltan
+    ocr_pending: list[list[int]]  # lotes de OCR que faltan (las páginas se guardan una a una)
     estimate: Estimate
 
     @property
@@ -196,8 +200,9 @@ def _key(prep: Prepared, fragment: str, prompt_name: str) -> str:
     )
 
 
-def _ocr_key(prep: Prepared, pages: list[int]) -> str:
-    return make_key(prep.book.info.sha256, f"ocr-{pages}", analyze.prompt("ocr").id, prep.model)
+def _ocr_key(prep: Prepared, page: int) -> str:
+    """El OCR se guarda por página: cambiar el rango no obliga a volver a pagarlo."""
+    return make_key(prep.book.info.sha256, f"ocr-p{page}", analyze.prompt("ocr").id, prep.model)
 
 
 def _chapter_fragment(chapter: structure.Chapter, analyses: list[schemas.ChunkAnalysis]) -> str:
@@ -213,10 +218,22 @@ def chapter_chunks(book: ingest.Book, chapter: structure.Chapter) -> list[struct
     return chunks
 
 
-def _apply_ocr(book: ingest.Book, result: schemas.OcrResultado) -> None:
-    for page in result.paginas:
-        if 1 <= page.pagina <= len(book.pages):
+def _apply_ocr(book: ingest.Book, pages: list[schemas.OcrPagina], wanted: set[int]) -> None:
+    """Aplica el OCR solo a las páginas pedidas (ignora números de página inventados)."""
+    for page in pages:
+        if page.pagina in wanted and 1 <= page.pagina <= len(book.pages):
             book.pages[page.pagina - 1].set_ocr_text(page.texto)
+
+
+def _ranges(pages: list[int]) -> list[tuple[int, int]]:
+    """[3, 4, 5, 9] → [(3, 5), (9, 9)]."""
+    out: list[tuple[int, int]] = []
+    for p in sorted(set(pages)):
+        if out and p == out[-1][1] + 1:
+            out[-1] = (out[-1][0], p)
+        else:
+            out.append((p, p))
+    return out
 
 
 # --- Paso 1: preparar (gratis) ---------------------------------------------------------
@@ -245,12 +262,14 @@ def prepare(
     # OCR: lo que ya está en caché se aplica ahora (gratis) y no se vuelve a pedir.
     selected_pages = {p for c in prep.selected for p in range(c.start_page, c.end_page + 1)}
     scanned = [p for p in book.scanned_pages if p in selected_pages]
-    for batch in ocr.batches(scanned):
-        hit = cache.get(_ocr_key(prep, batch))
+    missing: list[int] = []
+    for page in scanned:
+        hit = cache.get(_ocr_key(prep, page))
         if hit:
-            _apply_ocr(book, schemas.OcrResultado.model_validate_json(hit[0]))
+            _apply_ocr(book, [schemas.OcrPagina.model_validate_json(hit[0])], {page})
         else:
-            prep.ocr_pending.append(batch)
+            missing.append(page)
+    prep.ocr_pending = ocr.batches(missing)
     prep.estimate = _estimate(prep, cache)
     return prep
 
@@ -337,6 +356,31 @@ class _Runner:
         self.cached_calls = 0
         self._durations: list[float] = []
         self._lock = threading.Lock()
+        self.halt = threading.Event()  # parada interna tras un error grave
+        self.last = Progress(Stage.READING, 0, 0)
+
+    def stopped(self) -> bool:
+        return self.halt.is_set() or self.cancel.cancelled
+
+    def is_set(self) -> bool:  # Waiter: lo usa el cliente para cortar esperas y respuestas
+        return self.stopped()
+
+    def wait(self, timeout: float | None = None) -> bool:
+        deadline = time.monotonic() + (timeout or 0)
+        while not self.stopped():
+            left = deadline - time.monotonic()
+            if left <= 0:
+                return False
+            self.cancel.event.wait(min(left, 0.25))
+        return True
+
+    def check(self) -> None:
+        if self.stopped():
+            raise Cancelled
+
+    def add_usage(self, usage: Usage) -> None:
+        with self._lock:
+            self.usage += usage
 
     @property
     def cost_usd(self) -> float:
@@ -350,8 +394,9 @@ class _Runner:
         return avg * remaining_calls / PARALLEL_CALLS
 
     def emit(self, progress: Progress) -> None:
-        if self.on_progress:
-            with self._lock:
+        with self._lock:
+            self.last = progress
+            if self.on_progress:
                 self.on_progress(progress)
 
     def call(self, key: str, kind: str, request: LLMRequest, schema: type[M]) -> M:
@@ -362,10 +407,7 @@ class _Runner:
                 self.calls += 1
                 self.cached_calls += 1
             return schema.model_validate_json(hit[0], context=request.context)
-        self.cancel.check()
-        started = time.monotonic()
-        result: Result[M] = structured_call(self.llm, request, schema)
-        elapsed = time.monotonic() - started
+        result = self.fresh_call(request, schema)
         self.cache.put(
             key,
             book_sha=self.prep.book.info.sha256,
@@ -374,11 +416,38 @@ class _Runner:
             model=self.prep.model,
             usage=result.usage,
         )
-        with self._lock:
-            self.calls += 1
-            self.usage += result.usage
-            self._durations.append(elapsed)
         return result.value
+
+    def fresh_call(self, request: LLMRequest, schema: type[M]) -> Result[M]:
+        """Llamada sin caché. Si el servicio sigue saturado, espera y reintenta solo."""
+        request = replace(request, stop=self)
+        for round_ in range(RATE_LIMIT_ROUNDS + 1):
+            self.check()
+            started = time.monotonic()
+            try:
+                result: Result[M] = structured_call(self.llm, request, schema)
+            except LLMCallError as exc:
+                self.add_usage(exc.usage)
+                raise
+            except CribaError as exc:
+                if isinstance(exc.usage, Usage):
+                    self.add_usage(exc.usage)
+                if exc.kind is ErrorKind.RATE_LIMITED and round_ < RATE_LIMIT_ROUNDS:
+                    log.warning("Servicio saturado; nueva ronda en %.0f s", RATE_LIMIT_WAIT)
+                    self.emit(replace(self.last, notice="rate_limited"))
+                    if self.wait(RATE_LIMIT_WAIT):
+                        raise Cancelled from exc
+                    continue
+                raise
+            elapsed = time.monotonic() - started
+            with self._lock:
+                self.calls += 1
+                self.usage += result.usage
+                self._durations.append(elapsed)
+            if self.last.notice:
+                self.emit(replace(self.last, notice=None))
+            return result
+        raise AssertionError("inalcanzable")  # pragma: no cover
 
     def parallel(self, tasks: list[Callable[[], None]]) -> None:
         """Ejecuta las tareas con 4 llamadas a la vez. Un error grave detiene el resto."""
@@ -387,7 +456,7 @@ class _Runner:
             done, pending = wait(futures, return_when=FIRST_EXCEPTION)
             for fut in done:
                 if (exc := fut.exception()) is not None:
-                    self.cancel.cancel()  # que las demás tareas no empiecen llamadas nuevas
+                    self.halt.set()  # las demás tareas no empiezan llamadas nuevas
                     for p in pending:
                         p.cancel()
                     raise exc
@@ -426,28 +495,42 @@ def run(
     return result
 
 
+def _run_ocr(r: _Runner, batches: list[list[int]]) -> list[int]:
+    """Hace el OCR de los lotes y devuelve las páginas que han fallado."""
+    prep, book = r.prep, r.prep.book
+    failed: list[int] = []
+    for i, batch in enumerate(batches):
+        r.emit(Progress(Stage.OCR, i, len(batches), cost_usd=r.cost_usd))
+        try:
+            result = r.fresh_call(ocr.ocr_request(book.info.path, batch), schemas.OcrResultado)
+        except LLMCallError as exc:
+            log.warning("OCR fallido en páginas %s: %s", batch, exc)
+            failed += batch
+            continue
+        pages = [p for p in result.value.paginas if p.pagina in set(batch)]
+        _apply_ocr(book, pages, set(batch))
+        for page in pages:
+            r.cache.put(
+                _ocr_key(prep, page.pagina),
+                book_sha=book.info.sha256,
+                kind="ocr",
+                payload=page.model_dump_json(),
+                model=prep.model,
+                usage=result.usage if page is pages[0] else Usage(),
+            )
+    if batches:
+        r.emit(Progress(Stage.OCR, len(batches), len(batches), cost_usd=r.cost_usd))
+    return failed
+
+
 def _run(r: _Runner, options: Options) -> RunResult:  # noqa: PLR0915 (orquestación lineal)
     prep = r.prep
     book = prep.book
 
-    # Etapa 3: OCR de páginas escaneadas.
-    for i, batch in enumerate(prep.ocr_pending):
-        r.emit(Progress(Stage.OCR, i, len(prep.ocr_pending), cost_usd=r.cost_usd))
-        try:
-            res = r.call(
-                _ocr_key(prep, batch),
-                "ocr",
-                ocr.ocr_request(book.info.path, batch),
-                schemas.OcrResultado,
-            )
-        except LLMCallError as exc:
-            log.warning("OCR fallido en páginas %s: %s", batch, exc)
-            continue
-        _apply_ocr(book, res)
-    if prep.ocr_pending:
-        r.emit(
-            Progress(Stage.OCR, len(prep.ocr_pending), len(prep.ocr_pending), cost_usd=r.cost_usd)
-        )
+    # Etapa 3: OCR de páginas escaneadas (se guarda por página).
+    ocr_failed = _run_ocr(r, prep.ocr_pending)
+    if ocr_failed:  # RNF-05: los lotes fallidos se reintentan una vez al final
+        ocr_failed = _run_ocr(r, ocr.batches(ocr_failed))
 
     # Etapa 4: fragmentos (después del OCR, que añade texto).
     chunks = {i: chapter_chunks(book, ch) for i, ch in enumerate(prep.selected)}
@@ -491,13 +574,14 @@ def _run(r: _Runner, options: Options) -> RunResult:  # noqa: PLR0915 (orquestac
     # RNF-05: los fallidos se reintentan una vez al final.
     retry, failed[:] = list(failed), []
     for i, c in retry:
-        r.cancel.check()
+        r.check()
         done -= 1
         map_one(i, c)
 
     # Etapa 6: reduce por capítulo.
     capitulos: dict[int, schemas.Capitulo] = {}
     unprocessed: list[tuple[int, int]] = [(c.start_page, c.end_page) for _, c in failed]
+    unprocessed += _ranges(ocr_failed)
     synth_done = 0
 
     def reduce_one(ch_index: int) -> None:
@@ -555,7 +639,8 @@ def _run(r: _Runner, options: Options) -> RunResult:  # noqa: PLR0915 (orquestac
     )
 
     if not ordered:
-        raise CribaError(ErrorKind.NO_TEXT, detail="ningún fragmento se pudo procesar")
+        kind = ErrorKind.PROCESSING_FAILED if unprocessed or all_chunks else ErrorKind.NO_TEXT
+        raise CribaError(kind, detail="ningún fragmento se pudo procesar")
 
     # Etapa 7: resultado (los PDF se generan a partir de este JSON).
     r.emit(Progress(Stage.RENDERING, 0, 1, cost_usd=r.cost_usd))

@@ -12,10 +12,10 @@ from criba import __version__, logs, paths, settings
 from criba.core import ingest, structure
 from criba.core.cache import Cache
 from criba.core.cost import PRICES, to_eur
-from criba.core.errors import CribaError, ErrorKind
+from criba.core.errors import Cancelled, CribaError, ErrorKind
 from criba.core.fake_llm import FakeLLMClient
 from criba.core.llm import AnthropicClient, LLMClient
-from criba.core.pipeline import Cancelled, CancelToken, Options, Prepared, Progress, prepare, run
+from criba.core.pipeline import CancelToken, Options, Prepared, Progress, prepare, run
 
 NIVELES = ("esencial", "normal", "completo")
 TIPOS_EXAMEN = ("test", "desarrollo", "mixto")

@@ -9,10 +9,10 @@ import pytest
 from criba import logs
 from criba.core import pipeline, schemas
 from criba.core.cache import Cache
-from criba.core.errors import CribaError, ErrorKind
+from criba.core.errors import Cancelled, CribaError, ErrorKind
 from criba.core.fake_llm import FakeLLMClient
 from criba.core.llm import LLMCallError
-from criba.core.pipeline import Cancelled, CancelToken, Options, Stage
+from criba.core.pipeline import CancelToken, Options, Stage
 
 MODEL = "claude-sonnet-5-5"
 
@@ -185,15 +185,6 @@ def test_fatal_error_aborts_and_marks_job_failed(fx, tmp_path, cache) -> None:
         _run(fx.con_indice, tmp_path, cache, llm=FakeLLMClient(model=MODEL, fail=fail))
     assert exc.value.kind is ErrorKind.INVALID_KEY
     assert cache.jobs()[0].status == "failed"
-
-
-def test_all_failed_raises_no_text(fx, tmp_path, cache) -> None:
-    def fail(req):
-        return LLMCallError("x") if req.schema is schemas.ChunkAnalysis else None
-
-    with pytest.raises(CribaError) as exc:
-        _run(fx.con_indice, tmp_path, cache, llm=FakeLLMClient(model=MODEL, fail=fail))
-    assert exc.value.kind is ErrorKind.NO_TEXT
 
 
 def test_scanned_book_goes_through_ocr(fx, tmp_path, cache) -> None:

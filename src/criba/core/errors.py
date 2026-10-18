@@ -53,6 +53,14 @@ class ErrorKind(Enum):
         "No se puede guardar en esa carpeta. Elige otra.",
         (Action.CHOOSE_OTHER_FOLDER,),
     )
+    SERVICE_ERROR = (
+        "El servicio de IA ha rechazado la petición. Lo procesado se ha guardado.",
+        (Action.RETRY,),
+    )
+    PROCESSING_FAILED = (
+        "No se ha podido procesar el libro. Lo procesado se ha guardado.",
+        (Action.RETRY,),
+    )
     NO_KEY = (
         "Falta la clave de API de Anthropic. Añádela en Ajustes.",
         (Action.CHANGE_KEY,),
@@ -69,6 +77,10 @@ class ErrorKind(Enum):
         return cast(tuple[Action, ...], self.value[1])
 
 
+class Cancelled(Exception):  # noqa: N818 (es un evento, no un error)
+    """El usuario ha cancelado. Lo procesado está en la caché."""
+
+
 class CribaError(Exception):
     """Error previsto. ``str()`` es el mensaje amable; ``detail`` va al log."""
 
@@ -76,6 +88,7 @@ class CribaError(Exception):
         super().__init__(kind.message)
         self.kind = kind
         self.detail = detail
+        self.usage: object | None = None  # tokens ya gastados (``cost.Usage``), si los hay
 
     @property
     def message(self) -> str:
