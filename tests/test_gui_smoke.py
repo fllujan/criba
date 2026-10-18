@@ -44,6 +44,7 @@ def test_qml_has_no_warnings(qapp, qtbot, app_dirs) -> None:
             eng = create_engine(backend)
             qtbot.wait(50)
             assert eng.rootObjects()
+            backend.shutdown()
             del eng
     finally:
         qInstallMessageHandler(previous)

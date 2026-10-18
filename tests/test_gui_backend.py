@@ -28,6 +28,17 @@ def fakes():
     return []
 
 
+_OPEN: list[Backend] = []
+
+
+@pytest.fixture(autouse=True)
+def _close_backends(cache):  # depende de la caché: se cierra antes que ella
+    """Cierra cada backend al terminar: destruir un QThread vivo aborta Qt (en Windows, siempre)."""
+    yield
+    while _OPEN:
+        _OPEN.pop().shutdown()
+
+
 def _backend(qapp, cache, fakes, *, fail=None, checker=None) -> Backend:
     def factory(key: str, model: str) -> FakeLLMClient:
         assert key == KEY
@@ -38,7 +49,9 @@ def _backend(qapp, cache, fakes, *, fail=None, checker=None) -> Backend:
     def ok_checker(key: str, model: str) -> None:
         return None
 
-    return Backend(cache, llm_factory=factory, key_checker=checker or ok_checker)
+    backend = Backend(cache, llm_factory=factory, key_checker=checker or ok_checker)
+    _OPEN.append(backend)
+    return backend
 
 
 @pytest.fixture
