@@ -9,6 +9,8 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from criba import __version__, logs, paths
+from criba.core import ingest, structure
+from criba.core.errors import CribaError
 
 NIVELES = ("esencial", "normal", "completo")
 TIPOS_EXAMEN = ("test", "desarrollo", "mixto")
@@ -27,17 +29,45 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def _miles(n: int) -> str:
+    """Número con separador de miles español: 12.345."""
+    return f"{n:,}".replace(",", ".")
+
+
+def _print_analysis(book: ingest.Book) -> None:
+    """Muestra el análisis local (gratis): páginas, capítulos y fragmentos."""
+    chapters = structure.detect_chapters(book)
+    print(f"Asignatura: {book.info.title}")
+    print(f"Páginas: {book.info.page_count}  ·  escaneadas: {len(book.scanned_pages)}")
+    print(f"Capítulos ({chapters[0].source}):")
+    total_chunks = total_tokens = 0
+    for ch in chapters:
+        chunks = structure.chunk_chapter(book, ch)
+        tokens = sum(c.tokens for c in chunks)
+        total_chunks += len(chunks)
+        total_tokens += tokens
+        print(
+            f"  · {ch.title}  (pp. {ch.start_page}–{ch.end_page}, "
+            f"{len(ch.sections)} apartados, {len(chunks)} fragmentos, ≈{_miles(tokens)} tokens)"
+        )
+    print(f"Total: {total_chunks} fragmentos, ≈{_miles(total_tokens)} tokens de entrada")
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """Punto de entrada de la CLI. Devuelve el código de salida."""
     args = parse_args(argv)
     log = logs.setup()
-    if not args.pdf.is_file():
-        print(f"No se ha encontrado el archivo: {args.pdf}", file=sys.stderr)
-        return 2
     salida = args.salida or paths.default_output_dir()
     log.info("CLI: %s nivel=%s examen=%s salida=%s", args.pdf, args.nivel, args.examen, salida)
-    print("El procesamiento llega en la fase F2.", file=sys.stderr)
-    return 1
+    try:
+        book = ingest.open_book(args.pdf)
+    except CribaError as err:
+        log.warning("CLI rechaza %s: %s (%s)", args.pdf, err.kind.name, err.detail)
+        print(err.message, file=sys.stderr)
+        return 2
+    _print_analysis(book)
+    print("\nEl procesamiento con IA llega en la fase F2.", file=sys.stderr)
+    return 0
 
 
 if __name__ == "__main__":  # pragma: no cover

@@ -61,9 +61,10 @@ strict = true
 mypy_path = "src"
 packages = ["criba"]
 warn_unreachable = true
+untyped_calls_exclude = ["pymupdf"]
 
 [[tool.mypy.overrides]]
-module = ["fitz", "pymupdf", "reportlab.*", "keyring.*"]
+module = ["reportlab.*", "keyring.*"]
 ignore_missing_imports = true
 
 # --- Pytest -------------------------------------------------------------
@@ -75,6 +76,10 @@ markers = [
     "gui: tests de interfaz con pytest-qt",
 ]
 qt_api = "pyside6"
+filterwarnings = [
+    "error",
+    "ignore:builtin type (SwigPyPacked|SwigPyObject|swigvarlink) has no __module__ attribute:DeprecationWarning",
+]
 
 [tool.coverage.run]
 source = ["criba"]
