@@ -16,6 +16,8 @@ from criba.core.errors import Cancelled, CribaError, ErrorKind
 from criba.core.fake_llm import FakeLLMClient
 from criba.core.llm import AnthropicClient, LLMClient
 from criba.core.pipeline import CancelToken, Options, Prepared, Progress, prepare, run
+from criba.core.schemas import Libro
+from criba.render import render_book
 
 NIVELES = ("esencial", "normal", "completo")
 TIPOS_EXAMEN = ("test", "desarrollo", "mixto")
@@ -51,7 +53,9 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="criba", description="Resume un libro en PDF para estudiar."
     )
-    parser.add_argument("pdf", type=Path, help="PDF del libro")
+    parser.add_argument(
+        "pdf", type=Path, help="PDF del libro (o un «datos.json» para regenerar solo los PDF)"
+    )
     parser.add_argument("--nivel", choices=NIVELES, default="normal")
     parser.add_argument("--examen", choices=TIPOS_EXAMEN, default="mixto")
     parser.add_argument("--salida", type=Path, default=None, help="carpeta de salida")
@@ -123,6 +127,22 @@ def _client(args: argparse.Namespace, model: str) -> LLMClient:
     return AnthropicClient(key, model)
 
 
+def _render_only(json_path: Path, out_dir: Path | None) -> int:
+    """Regenera los dos PDF a partir de un «datos.json» (sin IA, sin coste)."""
+    try:
+        libro = Libro.model_validate_json(json_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        print(f"No se ha podido leer {json_path}.", file=sys.stderr)
+        return 2
+    try:
+        summary, outline = render_book(libro, out_dir or json_path.parent)
+    except CribaError as err:
+        print(err.message, file=sys.stderr)
+        return 2
+    print(f"Resumen: {summary}\nEsquema: {outline}")
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """Punto de entrada de la CLI. Devuelve el código de salida."""
     args = parse_args(argv)
@@ -132,6 +152,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     salida = args.salida or prefs.output_path
     log.info("CLI: %s nivel=%s examen=%s modelo=%s", args.pdf, args.nivel, args.examen, model)
     cancel = CancelToken()
+    if args.pdf.suffix.lower() == ".json":
+        return _render_only(args.pdf, args.salida)
     try:
         title = args.asignatura or ingest.validate(args.pdf).title
         options = Options(
@@ -163,7 +185,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         print("\nCancelado. Lo procesado se ha guardado y no se volverá a pagar.", file=sys.stderr)
         return 130
     print(
-        f"\n\nListo: {result.json_path}\n"
+        f"\n\nResumen: {result.summary_pdf}\nEsquema: {result.outline_pdf}\n"
         f"Llamadas: {result.calls} ({result.cached_calls} desde la caché)"
         f" · coste real ≈{_euros(to_eur(result.cost_usd))} € ({_euros(result.cost_usd)} $)"
     )

@@ -31,6 +31,7 @@ from criba.core.cache import Cache, make_key
 from criba.core.cost import ChapterPlan, ChunkPlan, Estimate, Usage, estimate, estimate_tokens
 from criba.core.errors import Cancelled, CribaError, ErrorKind
 from criba.core.llm import LLMCallError, LLMClient, LLMRequest, Result, structured_call
+from criba.render import render_book
 
 log = logging.getLogger(__name__)
 
@@ -152,6 +153,8 @@ class RunResult:
 
     libro: schemas.Libro
     json_path: Path
+    summary_pdf: Path
+    outline_pdf: Path
     usage: Usage
     cost_usd: float
     calls: int
@@ -491,7 +494,8 @@ def run(
     except BaseException:
         cache.finish_job(job, "failed", cost_usd=runner.cost_usd)
         raise
-    cache.finish_job(job, "done", outputs=[str(result.json_path)], cost_usd=result.cost_usd)
+    outputs = [str(p) for p in (result.summary_pdf, result.outline_pdf, result.json_path)]
+    cache.finish_job(job, "done", outputs=outputs, cost_usd=result.cost_usd)
     return result
 
 
@@ -672,10 +676,13 @@ def _run(r: _Runner, options: Options) -> RunResult:  # noqa: PLR0915 (orquestac
     except OSError as exc:
         kind = ErrorKind.DISK_FULL if exc.errno == errno.ENOSPC else ErrorKind.CANNOT_WRITE
         raise CribaError(kind, detail=repr(exc)) from exc
+    summary_pdf, outline_pdf = render_book(libro, options.output_dir)
     r.emit(Progress(Stage.DONE, 1, 1, cost_usd=r.cost_usd))
     return RunResult(
         libro=libro,
         json_path=json_path,
+        summary_pdf=summary_pdf,
+        outline_pdf=outline_pdf,
         usage=r.usage,
         cost_usd=r.cost_usd,
         calls=r.calls,
