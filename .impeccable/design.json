@@ -1,0 +1,778 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-18T10:44:04+00:00",
+  "title": "Design System: Criba",
+  "extensions": {
+    "colorMeta": {
+      "cover": {
+        "role": "primary",
+        "displayName": "Verde Tapa",
+        "canonical": "#4E6A17",
+        "tonalRamp": [
+          "#011000",
+          "#162D00",
+          "#324C00",
+          "#506C1A",
+          "#708E3F",
+          "#92B262",
+          "#B6D786",
+          "#DAFDAA"
+        ]
+      },
+      "cover-dark": {
+        "role": "primary",
+        "displayName": "Verde Tapa (oscuro)",
+        "canonical": "#34480F",
+        "tonalRamp": [
+          "#031000",
+          "#1A2C00",
+          "#364A11",
+          "#546A33",
+          "#758C54",
+          "#97AF75",
+          "#BAD498",
+          "#DFFABD"
+        ]
+      },
+      "cover-ink": {
+        "role": "neutral",
+        "displayName": "Sobre la tapa",
+        "canonical": "#FFFFFF",
+        "tonalRamp": [
+          "#0B0B0B",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#A5A5A5",
+          "#C9C9C9",
+          "#EEEEEE"
+        ]
+      },
+      "cover-muted": {
+        "role": "neutral",
+        "displayName": "Sobre la tapa, apagado",
+        "canonical": "#E3EAD5",
+        "tonalRamp": [
+          "#090D02",
+          "#232717",
+          "#3F4534",
+          "#5E6452",
+          "#7F8572",
+          "#A2A894",
+          "#C6CCB8",
+          "#EBF2DD"
+        ]
+      },
+      "cover-muted-dark": {
+        "role": "neutral",
+        "displayName": "Sobre la tapa, apagado (oscuro)",
+        "canonical": "#D3DCC2",
+        "tonalRamp": [
+          "#080D00",
+          "#222814",
+          "#3E4530",
+          "#5D654E",
+          "#7E866E",
+          "#A1A990",
+          "#C5CDB4",
+          "#EAF3D8"
+        ]
+      },
+      "label": {
+        "role": "neutral",
+        "displayName": "Etiqueta",
+        "canonical": "#FFFFFF",
+        "tonalRamp": [
+          "#0B0B0B",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#A5A5A5",
+          "#C9C9C9",
+          "#EEEEEE"
+        ]
+      },
+      "label-dark": {
+        "role": "neutral",
+        "displayName": "Etiqueta (oscuro)",
+        "canonical": "#20251C",
+        "tonalRamp": [
+          "#080D05",
+          "#22271E",
+          "#3F443A",
+          "#5E6359",
+          "#7E857A",
+          "#A1A89C",
+          "#C5CCC0",
+          "#EAF1E5"
+        ]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Verde Trigo",
+        "canonical": "#6B8E23",
+        "tonalRamp": [
+          "#001100",
+          "#132E00",
+          "#2F4D00",
+          "#4D6E00",
+          "#6D9026",
+          "#8FB44E",
+          "#B2D973",
+          "#D7FF98"
+        ]
+      },
+      "accent-dark": {
+        "role": "primary",
+        "displayName": "Verde Trigo (oscuro)",
+        "canonical": "#8FB43C",
+        "tonalRamp": [
+          "#021000",
+          "#162D00",
+          "#324C00",
+          "#4F6D00",
+          "#70901F",
+          "#91B449",
+          "#B5D96E",
+          "#D9FF94"
+        ]
+      },
+      "accent-ink": {
+        "role": "primary",
+        "displayName": "Verde Trigo Tinta",
+        "canonical": "#3F5712",
+        "tonalRamp": [
+          "#021000",
+          "#182C00",
+          "#344B00",
+          "#526B29",
+          "#728D4B",
+          "#94B16D",
+          "#B8D590",
+          "#DDFBB4"
+        ]
+      },
+      "accent-ink-dark": {
+        "role": "primary",
+        "displayName": "Verde Trigo Tinta (oscuro)",
+        "canonical": "#B9D57A",
+        "tonalRamp": [
+          "#040F00",
+          "#1B2C00",
+          "#364B00",
+          "#556B00",
+          "#758E32",
+          "#97B157",
+          "#BAD67B",
+          "#DFFCA0"
+        ]
+      },
+      "primary": {
+        "role": "primary",
+        "displayName": "Verde Tapa Acción",
+        "canonical": "#4E6A17",
+        "tonalRamp": [
+          "#011000",
+          "#162D00",
+          "#324C00",
+          "#506C1A",
+          "#708E3F",
+          "#92B262",
+          "#B6D786",
+          "#DAFDAA"
+        ]
+      },
+      "primary-hover": {
+        "role": "primary",
+        "displayName": "Verde Tapa Acción (hover)",
+        "canonical": "#435C12",
+        "tonalRamp": [
+          "#021000",
+          "#172C00",
+          "#334B00",
+          "#526B24",
+          "#728E47",
+          "#94B169",
+          "#B7D68D",
+          "#DCFCB1"
+        ]
+      },
+      "primary-dark": {
+        "role": "primary",
+        "displayName": "Verde Tapa Acción (oscuro)",
+        "canonical": "#5B7C1D",
+        "tonalRamp": [
+          "#001100",
+          "#132E00",
+          "#2F4D00",
+          "#4D6D04",
+          "#6E9034",
+          "#8FB459",
+          "#B3D97D",
+          "#D7FFA1"
+        ]
+      },
+      "primary-hover-dark": {
+        "role": "primary",
+        "displayName": "Verde Tapa Acción (hover) (oscuro)",
+        "canonical": "#668A22",
+        "tonalRamp": [
+          "#001100",
+          "#122E00",
+          "#2E4D00",
+          "#4C6E00",
+          "#6C912A",
+          "#8EB451",
+          "#B1D975",
+          "#D6FF9A"
+        ]
+      },
+      "pen": {
+        "role": "secondary",
+        "displayName": "Bolígrafo Azul",
+        "canonical": "#1F3A8A",
+        "tonalRamp": [
+          "#040044",
+          "#071766",
+          "#1F3A8A",
+          "#3C5BAE",
+          "#5B7ED4",
+          "#7CA2FB",
+          "#9FC6FF",
+          "#C3ECFF"
+        ]
+      },
+      "pen-dark": {
+        "role": "secondary",
+        "displayName": "Bolígrafo Azul (oscuro)",
+        "canonical": "#9DB4F5",
+        "tonalRamp": [
+          "#030133",
+          "#131F53",
+          "#2D3E75",
+          "#4B5E98",
+          "#6B7FBD",
+          "#8CA3E2",
+          "#AFC7FF",
+          "#D4EDFF"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Hoja",
+        "canonical": "#FCFDFA",
+        "tonalRamp": [
+          "#0B0B0A",
+          "#252523",
+          "#414240",
+          "#61625F",
+          "#828380",
+          "#A4A5A3",
+          "#C8C9C7",
+          "#EEEFEC"
+        ]
+      },
+      "paper-dark": {
+        "role": "neutral",
+        "displayName": "Hoja (oscuro)",
+        "canonical": "#161914",
+        "tonalRamp": [
+          "#090C08",
+          "#232621",
+          "#40433D",
+          "#5F635C",
+          "#80847D",
+          "#A2A7A0",
+          "#C6CBC4",
+          "#ECF0E9"
+        ]
+      },
+      "grid": {
+        "role": "neutral",
+        "displayName": "Cuadrícula",
+        "canonical": "#E3EBF1",
+        "tonalRamp": [
+          "#070C10",
+          "#20262A",
+          "#3D4348",
+          "#5B6267",
+          "#7C8389",
+          "#9FA6AC",
+          "#C3CAD0",
+          "#E8F0F6"
+        ]
+      },
+      "grid-dark": {
+        "role": "neutral",
+        "displayName": "Cuadrícula (oscuro)",
+        "canonical": "#20261E",
+        "tonalRamp": [
+          "#080D06",
+          "#21271F",
+          "#3E443B",
+          "#5D645A",
+          "#7D857B",
+          "#A0A89D",
+          "#C4CCC1",
+          "#E9F1E6"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Tinta",
+        "canonical": "#1F2420",
+        "tonalRamp": [
+          "#080C09",
+          "#212723",
+          "#3E443F",
+          "#5D635E",
+          "#7E847F",
+          "#A1A7A2",
+          "#C4CBC6",
+          "#EAF1EB"
+        ]
+      },
+      "ink-dark": {
+        "role": "neutral",
+        "displayName": "Tinta (oscuro)",
+        "canonical": "#E7EBE2",
+        "tonalRamp": [
+          "#0A0C07",
+          "#232620",
+          "#40433C",
+          "#5F635B",
+          "#80847C",
+          "#A3A79E",
+          "#C7CBC2",
+          "#ECF0E7"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Lápiz",
+        "canonical": "#565F55",
+        "tonalRamp": [
+          "#070D06",
+          "#20281F",
+          "#3C453B",
+          "#5B645A",
+          "#7C857B",
+          "#9EA89D",
+          "#C2CDC1",
+          "#E7F2E6"
+        ]
+      },
+      "muted-dark": {
+        "role": "neutral",
+        "displayName": "Lápiz (oscuro)",
+        "canonical": "#A4AD9C",
+        "tonalRamp": [
+          "#080D03",
+          "#21281A",
+          "#3D4536",
+          "#5C6455",
+          "#7D8675",
+          "#A0A998",
+          "#C4CDBB",
+          "#E9F2E0"
+        ]
+      },
+      "hair": {
+        "role": "neutral",
+        "displayName": "Filete",
+        "canonical": "#DCE3DA",
+        "tonalRamp": [
+          "#080D07",
+          "#222720",
+          "#3E443D",
+          "#5D635C",
+          "#7E847C",
+          "#A1A79F",
+          "#C5CBC3",
+          "#EAF1E8"
+        ]
+      },
+      "hair-dark": {
+        "role": "neutral",
+        "displayName": "Filete (oscuro)",
+        "canonical": "#2E352B",
+        "tonalRamp": [
+          "#070D05",
+          "#21271E",
+          "#3D453A",
+          "#5C6459",
+          "#7D857A",
+          "#A0A89C",
+          "#C3CCC0",
+          "#E9F2E5"
+        ]
+      },
+      "selection": {
+        "role": "neutral",
+        "displayName": "Selección",
+        "canonical": "#EEF3E2",
+        "tonalRamp": [
+          "#0A0D03",
+          "#23271A",
+          "#404436",
+          "#5F6355",
+          "#808575",
+          "#A3A798",
+          "#C7CCBB",
+          "#ECF1E0"
+        ]
+      },
+      "selection-dark": {
+        "role": "neutral",
+        "displayName": "Selección (oscuro)",
+        "canonical": "#26301B",
+        "tonalRamp": [
+          "#060E00",
+          "#1F2914",
+          "#3B4630",
+          "#5A664F",
+          "#7B876F",
+          "#9DAA91",
+          "#C1CFB4",
+          "#E6F4D9"
+        ]
+      },
+      "field": {
+        "role": "neutral",
+        "displayName": "Campo",
+        "canonical": "#FFFFFF",
+        "tonalRamp": [
+          "#0B0B0B",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#A5A5A5",
+          "#C9C9C9",
+          "#EEEEEE"
+        ]
+      },
+      "field-dark": {
+        "role": "neutral",
+        "displayName": "Campo (oscuro)",
+        "canonical": "#1D211A",
+        "tonalRamp": [
+          "#090C07",
+          "#22271F",
+          "#3F443C",
+          "#5E635B",
+          "#7F847B",
+          "#A2A79E",
+          "#C6CBC2",
+          "#EBF1E7"
+        ]
+      },
+      "field-border": {
+        "role": "neutral",
+        "displayName": "Borde de campo",
+        "canonical": "#B9C4B1",
+        "tonalRamp": [
+          "#070E03",
+          "#202819",
+          "#3C4535",
+          "#5B6554",
+          "#7C8674",
+          "#9EA997",
+          "#C2CDBA",
+          "#E7F3DF"
+        ]
+      },
+      "field-border-dark": {
+        "role": "neutral",
+        "displayName": "Borde de campo (oscuro)",
+        "canonical": "#4A5441",
+        "tonalRamp": [
+          "#070E02",
+          "#202817",
+          "#3C4633",
+          "#5B6552",
+          "#7C8772",
+          "#9EAA94",
+          "#C2CEB8",
+          "#E7F3DD"
+        ]
+      },
+      "danger": {
+        "role": "error",
+        "displayName": "Corrección",
+        "canonical": "#A93226",
+        "tonalRamp": [
+          "#320000",
+          "#570000",
+          "#7C130B",
+          "#A23A2E",
+          "#C85D4E",
+          "#F08070",
+          "#FFA493",
+          "#FFCAB7"
+        ]
+      },
+      "danger-dark": {
+        "role": "error",
+        "displayName": "Corrección (oscuro)",
+        "canonical": "#F08A7E",
+        "tonalRamp": [
+          "#2F0000",
+          "#530000",
+          "#771C18",
+          "#9C3F37",
+          "#C26157",
+          "#EA8478",
+          "#FFA89B",
+          "#FFCDC0"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "figure": {
+        "displayName": "Cifra",
+        "purpose": "Coste estimado y gasto acumulado; una por pantalla."
+      },
+      "title": {
+        "displayName": "Titular",
+        "purpose": "Titular de cada pantalla."
+      },
+      "heading": {
+        "displayName": "Encabezado",
+        "purpose": "Encabezado de bloque junto a su número rodeado."
+      },
+      "body-large": {
+        "displayName": "Cuerpo grande",
+        "purpose": "Etiqueta de la tapa y botón principal."
+      },
+      "body": {
+        "displayName": "Cuerpo",
+        "purpose": "Texto corrido y controles."
+      },
+      "caption": {
+        "displayName": "Leyenda",
+        "purpose": "Detalles, conteos y nombres de control (600)."
+      },
+      "small": {
+        "displayName": "Pequeño",
+        "purpose": "Título de la etiqueta y números de los pasos."
+      },
+      "book": {
+        "displayName": "Libro",
+        "purpose": "Títulos de capítulo que vienen del libro."
+      },
+      "margin-note": {
+        "displayName": "Nota de margen",
+        "purpose": "Páginas a bolígrafo en cursiva, cifras tabulares."
+      },
+      "ring-numeral": {
+        "displayName": "Número rodeado",
+        "purpose": "Número de sección en el margen, en cursiva."
+      }
+    },
+    "typeScale": {
+      "rule": "tamaño = round(base × clamp(fuenteSistema / 13, 1, 1.5))",
+      "source": "Theme.scale"
+    },
+    "shadows": [],
+    "overlays": [
+      {
+        "name": "scrim",
+        "value": "#661F2420",
+        "purpose": "Velo modal en claro (ARGB de Qt)."
+      },
+      {
+        "name": "scrim-dark",
+        "value": "#99000000",
+        "purpose": "Velo modal en oscuro (ARGB de Qt)."
+      }
+    ],
+    "motion": [
+      {
+        "name": "fast",
+        "value": "140ms",
+        "purpose": "Cambios de color en hover y pulsado; salida de la hoja modal. 0 con movimiento reducido."
+      },
+      {
+        "name": "base",
+        "value": "220ms",
+        "purpose": "Fundido entre pantallas, deslizamiento de Ajustes/Historial, entrada de la hoja modal. 0 con movimiento reducido."
+      },
+      {
+        "name": "stroke",
+        "value": "360ms",
+        "purpose": "Trazo del visto de la marca (OutCubic). 0 con movimiento reducido."
+      },
+      {
+        "name": "progress",
+        "value": "440ms",
+        "purpose": "Avance de la barra de tinta (base × 2)."
+      },
+      {
+        "name": "easing",
+        "value": "Easing.OutExpo",
+        "purpose": "Curva por defecto: corta y con frenada."
+      },
+      {
+        "name": "breathe",
+        "value": "700ms InOutSine, opacidad 1 ↔ 0.25",
+        "purpose": "Punto de tinta de la marca en curso; quieto con movimiento reducido."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "min-window",
+        "value": "900x640"
+      },
+      {
+        "name": "cover-narrow",
+        "value": "1000px",
+        "purpose": "Por debajo, etiqueta al 30 % y solo el nombre del paso actual."
+      }
+    ],
+    "grid": {
+      "cell": "16px",
+      "row": "32px (pasos de 8 px con la escala)",
+      "marginRule": "x = 112px, 2px accent al 85 %",
+      "contentX": "128px",
+      "markX": "82px",
+      "sideColumn": "300–400px (30 % del ancho), a 32px del borde"
+    }
+  },
+  "components": [
+    {
+      "name": "Botón principal",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "La acción que decide la pantalla; un trozo de tapa sobre la hoja.",
+      "html": "<button class=\"ds-btn-primary\">Generar resumen y esquema</button>",
+      "css": ".ds-btn-primary{font-family:Inter,sans-serif;font-size:15px;font-weight:700;color:#FFFFFF;background:#4E6A17;border:none;border-radius:8px;height:48px;min-width:160px;padding:0 24px;transition:background-color 140ms cubic-bezier(0.16,1,0.3,1);cursor:pointer}.ds-btn-primary:hover{background:#435C12}.ds-btn-primary:active{background:#3A5010}.ds-btn-primary:focus-visible{outline:2px solid #1F3A8A;outline-offset:3px}.ds-btn-primary:disabled{opacity:.45}"
+    },
+    {
+      "name": "Botón discreto",
+      "kind": "button",
+      "refersTo": "button-quiet",
+      "description": "Acción secundaria sobre la hoja: borde fino y fondo de campo.",
+      "html": "<button class=\"ds-btn-quiet\">Cambiar libro</button> <button class=\"ds-btn-quiet ds-btn-quiet--danger\">Borrar</button>",
+      "css": ".ds-btn-quiet{font-family:Inter,sans-serif;font-size:14px;font-weight:500;color:#1F2420;background:#FFFFFF;border:1px solid #B9C4B1;border-radius:6px;height:32px;padding:0 14px;transition:background-color 140ms cubic-bezier(0.16,1,0.3,1);cursor:pointer}.ds-btn-quiet:hover{background:#EEF3E2;border-color:#6B8E23}.ds-btn-quiet:active{background:#DCE3DA}.ds-btn-quiet:focus-visible{outline:2px solid #1F3A8A;outline-offset:3px}.ds-btn-quiet--danger{color:#A93226}.ds-btn-quiet--danger:hover{border-color:#B9C4B1}"
+    },
+    {
+      "name": "Enlace",
+      "kind": "button",
+      "refersTo": "link",
+      "description": "Acción secundaria que no merece botón.",
+      "html": "<a class=\"ds-link\" href=\"#\">Marcar todos</a>",
+      "css": ".ds-link{font-family:Inter,sans-serif;font-size:14px;font-weight:500;color:#3F5712;text-decoration:underline;text-decoration-color:rgba(63,87,18,.45);text-underline-offset:4px;text-decoration-thickness:1px}.ds-link:hover{text-decoration-color:#3F5712}.ds-link:focus-visible{outline:2px solid #1F3A8A;outline-offset:4px;border-radius:6px}"
+    },
+    {
+      "name": "Campo",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Campo de texto sobre la hoja; con foco, borde de bolígrafo.",
+      "html": "<input class=\"ds-field\" placeholder=\"Clave de API\">",
+      "css": ".ds-field{font-family:Inter,sans-serif;font-size:14px;color:#1F2420;background:#FFFFFF;border:1px solid #B9C4B1;border-radius:6px;height:36px;padding:0 12px;outline:none}.ds-field::placeholder{color:#565F55}.ds-field:focus{border:2px solid #1F3A8A;padding:0 11px}"
+    },
+    {
+      "name": "Control segmentado",
+      "kind": "chip",
+      "refersTo": "segmented",
+      "description": "Una opción entre pocas; la elegida con fondo de selección y borde verde trigo.",
+      "html": "<div class=\"ds-seg\" role=\"radiogroup\"><button class=\"ds-seg-opt\">Test</button><button class=\"ds-seg-opt\">Desarrollo</button><button class=\"ds-seg-opt ds-seg-opt--on\" aria-checked=\"true\">Mixto</button></div>",
+      "css": ".ds-seg{display:flex;gap:3px;padding:3px;background:#FFFFFF;border:1px solid #B9C4B1;border-radius:8px;width:360px}.ds-seg:focus-within{outline:2px solid #1F3A8A;outline-offset:3px}.ds-seg-opt{flex:1;font-family:Inter,sans-serif;font-size:14px;font-weight:500;color:#1F2420;background:transparent;border:2px solid transparent;border-radius:5px;height:32px;cursor:pointer;transition:background-color 140ms}.ds-seg-opt:hover{background:rgba(238,243,226,.6)}.ds-seg-opt--on{background:#EEF3E2;border-color:#6B8E23;color:#3F5712;font-weight:700}"
+    },
+    {
+      "name": "Tapa con pasos",
+      "kind": "nav",
+      "refersTo": "cover-bar",
+      "description": "Barra-tapa verde: etiqueta de la asignatura, pasos y accesos.",
+      "html": "<header class=\"ds-cover\"><div class=\"ds-cover-label\"><small>Asignatura</small><span>Biología y Geología 1.º Bachillerato</span></div><ol class=\"ds-steps\"><li class=\"ds-step ds-step--on\"><b>1</b>Libro</li><li class=\"ds-step\"><b>2</b>Procesar</li><li class=\"ds-step\"><b>3</b>Listo</li></ol><nav><button class=\"ds-cover-btn\">Historial</button><button class=\"ds-cover-btn\">Ajustes</button></nav></header>",
+      "css": ".ds-cover{display:flex;align-items:center;gap:24px;height:80px;padding:0 24px;background:#4E6A17;font-family:Inter,sans-serif;}.ds-cover-label{width:360px;height:52px;box-sizing:border-box;padding:0 16px;display:flex;flex-direction:column;justify-content:center;gap:1px;background:#FFFFFF;border-radius:10px}.ds-cover-label small{font-size:12px;font-weight:700;letter-spacing:.3px;color:#3F5712}.ds-cover-label span{font-size:15px;font-weight:500;color:#1F2420;border-bottom:1px dashed #B9C4B1}.ds-steps{flex:1;display:flex;justify-content:center;gap:28px;list-style:none;margin:0;padding:0}.ds-step{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:#E3EAD5}.ds-step b{display:inline-grid;place-items:center;width:20px;height:20px;border:1px solid #E3EAD5;border-radius:50%;font-size:12px}.ds-step--on{color:#FFFFFF;font-weight:700}.ds-step--on b{background:#FFFFFF;border-color:#FFFFFF;color:#4E6A17}.ds-cover-btn{font-family:Inter,sans-serif;font-size:14px;font-weight:500;color:#FFFFFF;background:transparent;border:none;border-radius:6px;height:32px;padding:0 12px;cursor:pointer;transition:background-color 140ms}.ds-cover-btn:hover{background:rgba(255,255,255,.12)}.ds-cover-btn:active{background:rgba(255,255,255,.2)}.ds-cover-btn:focus-visible{outline:2px solid #FFFFFF;outline-offset:3px}"
+    },
+    {
+      "name": "Hoja con capítulos y marcas",
+      "kind": "custom",
+      "refersTo": "chapter-row",
+      "description": "Firma del sistema: cuadrícula de 16 px, filete de margen y marcas a bolígrafo en celdas fijas.",
+      "html": "<div class=\"ds-sheet\"><div class=\"ds-row\"><i>p. 1</i><svg class=\"ds-mark\" viewBox=\"0 0 20 20\"><path d=\"M3.2 3.6 C7 3.1 12.5 3.3 16.6 3.2 C16.9 7.5 16.7 12.4 16.9 16.5 C12 16.9 7.4 16.6 3.4 16.8 C3.1 12.3 3.4 7.8 3.2 3.6Z\"/></svg><span class=\"ds-row-title ds-off\">Preliminares</span><em>1 pág.</em></div><div class=\"ds-row\"><i>pp. 2–9</i><svg class=\"ds-mark\" viewBox=\"0 0 20 20\"><path d=\"M3.2 3.6 C7 3.1 12.5 3.3 16.6 3.2 C16.9 7.5 16.7 12.4 16.9 16.5 C12 16.9 7.4 16.6 3.4 16.8 C3.1 12.3 3.4 7.8 3.2 3.6Z\"/><path class=\"ds-tick\" d=\"M5.6 10.4 C6.8 11.3 7.9 12.6 8.7 14.1 C10.6 9.6 13.4 5.6 18.4 1.6\"/></svg><span class=\"ds-row-title\">Capítulo 1. La célula</span><em>8 págs.</em></div></div>",
+      "css": ".ds-sheet{position:relative;width:640px;padding:16px 0;background-color:#FCFDFA;background-image:linear-gradient(#E3EBF1 1px,transparent 1px),linear-gradient(90deg,#E3EBF1 1px,transparent 1px);background-size:16px 16px}.ds-sheet::before{content:'';position:absolute;left:111px;top:0;bottom:0;width:2px;background:#6B8E23;opacity:.85}.ds-row{position:relative;height:32px;display:flex;align-items:center}.ds-row i{width:72px;text-align:right;font-family:'Source Serif 4',serif;font-style:italic;font-size:12px;color:#1F3A8A;font-variant-numeric:tabular-nums}.ds-mark{position:absolute;left:82px;width:20px;height:20px;fill:none;stroke:#1F3A8A;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}.ds-tick{stroke-width:2.1;stroke-dasharray:24;stroke-dashoffset:0;animation:ds-draw 360ms cubic-bezier(0.33,1,0.68,1)}@keyframes ds-draw{from{stroke-dashoffset:24}}@media (prefers-reduced-motion:reduce){.ds-tick{animation:none}}.ds-row-title{position:absolute;left:132px;right:4px;height:32px;line-height:32px;border-top:1px solid #DCE3DA;background:#FCFDFA;font-family:'Source Serif 4',serif;font-size:15px;color:#1F2420;transition:background-color 140ms}.ds-row:hover .ds-row-title{background:rgba(238,243,226,.55)}.ds-off{color:#565F55}.ds-row em{position:absolute;right:8px;font-style:normal;font-family:Inter,sans-serif;font-size:13px;color:#565F55}"
+    },
+    {
+      "name": "Barra de tinta",
+      "kind": "custom",
+      "refersTo": "ink-bar",
+      "description": "Progreso: filete de la hoja que se rellena de verde trigo.",
+      "html": "<div class=\"ds-inkbar\" role=\"progressbar\" aria-valuenow=\"30\"><span style=\"width:30%\"></span></div>",
+      "css": ".ds-inkbar{width:480px;height:6px;border-radius:3px;background:#DCE3DA;overflow:hidden}.ds-inkbar span{display:block;height:100%;min-width:6px;border-radius:3px;background:#6B8E23;transition:width 440ms cubic-bezier(0.16,1,0.3,1)}"
+    },
+    {
+      "name": "Aviso",
+      "kind": "custom",
+      "description": "Mensaje entre dos filetes con el problema en lenguaje normal y qué hacer.",
+      "html": "<div class=\"ds-notice\"><p>No se ha podido leer el PDF. Prueba con otro archivo.</p><button class=\"ds-notice-btn\">Elegir otro archivo</button></div>",
+      "css": ".ds-notice{width:520px;padding:16px 0;border-top:1px solid rgba(169,50,38,.6);border-bottom:1px solid rgba(169,50,38,.6);font-family:Inter,sans-serif;}.ds-notice p{margin:0 0 12px;font-size:14px;font-weight:500;line-height:1.3;color:#A93226}.ds-notice-btn{font-family:Inter,sans-serif;font-size:14px;font-weight:500;color:#1F2420;background:#FFFFFF;border:1px solid #B9C4B1;border-radius:6px;height:32px;padding:0 14px}.ds-notice-btn:hover{background:#EEF3E2;border-color:#6B8E23}"
+    }
+  ],
+  "narrative": {
+    "northStar": "El cuaderno de la asignatura",
+    "overview": "Criba es un cuaderno de cuadros abierto sobre la mesa. Arriba, la tapa de polipropileno verde con su etiqueta blanca, donde se escribe la asignatura. Debajo, la hoja: cuadrícula de 16 px muy tenue, filete de margen verde y, en el margen, marcas a bolígrafo azul en celdas fijas que dicen qué entra, qué está en curso y qué está hecho. La interfaz no flota sobre la hoja: se escribe en ella.\n\nEl color va por regiones planas. La tapa es la marca y el único bloque de color fuerte; la hoja es el trabajo y se mantiene casi blanca (o pizarra en modo oscuro, con la misma geometría). La densidad es la de una web de estudio: filas de 32 px separadas por filetes de 1 px, sin tarjetas, sin degradados y sin sombras. La retícula no es un fondo decorativo: los valores de layout se alinean con la celda de 16 px.\n\nDos voces tipográficas separan lo que dice Criba de lo que viene del libro: Inter para la interfaz y Source Serif 4 para los títulos de capítulo y las anotaciones del margen. El movimiento es corto y con frenada; el único gesto con duración propia es el trazo de la marca al completarse, y desaparece si el sistema pide reducir movimiento.",
+    "keyCharacteristics": [
+      "Tapa verde plana a ancho completo (80 px) con etiqueta blanca redondeada.",
+      "Hoja cuadriculada de 16 px con filete de margen verde a 112 px.",
+      "El margen es una columna de estado: marcas y números rodeados a bolígrafo.",
+      "Filetes de 1 px en lugar de tarjetas; profundidad cero.",
+      "Inter para la interfaz, Source Serif 4 para el libro.",
+      "Modo oscuro automático con la misma geometría."
+    ],
+    "rules": [
+      {
+        "name": "The Tapa y Hoja Rule",
+        "body": "El verde saturado vive en la tapa y en el botón principal. La hoja no lleva fondos de color: el verde entra en ella solo como filete, borde, relleno de progreso o texto.",
+        "section": "colors"
+      },
+      {
+        "name": "The Bolígrafo Rule",
+        "body": "El azul `pen` es tinta, nunca superficie. Se usa para marcas, anotaciones del margen y foco; no para fondos ni botones.",
+        "section": "colors"
+      },
+      {
+        "name": "The Dos Voces Rule",
+        "body": "La serif solo aparece para lo que viene del libro o lo que se anota a mano. La interfaz habla siempre en Inter.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tamaño del Sistema Rule",
+        "body": "Ningún texto de interfaz usa un tamaño fijo: siempre un rol de `Theme`, que respeta el tamaño de letra del sistema.",
+        "section": "typography"
+      },
+      {
+        "name": "The Celda Rule",
+        "body": "Las medidas de layout son múltiplos de 8 y, en lo estructural, de la celda de 16 px. La retícula es estructura, no textura.",
+        "section": "layout"
+      },
+      {
+        "name": "The Sin Sombra Rule",
+        "body": "Ninguna superficie proyecta sombra. Si algo necesita separarse, usa un filete, un parche liso de hoja o el velo modal.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** toma todos los colores, tamaños, celdas y duraciones de `Theme`; cada color tiene su pareja oscura y se resuelve solo.",
+      "**Do** pon el estado en el margen con `Mark` en su celda fija (x = 82) y los bloques numerados con `Ring`.",
+      "**Do** separa filas y bloques con filetes de 1 px `hair` y zonas de lectura con parches lisos de `paper` sobre la cuadrícula.",
+      "**Do** usa Source Serif 4 para títulos que vienen del libro y para anotaciones del margen; Inter para todo lo demás.",
+      "**Do** usa una sola acción principal (PrimaryButton) por decisión, y QuietButton o LinkButton para lo secundario.",
+      "**Do** usa las duraciones `fast` (140 ms), `base` (220 ms) y `stroke` (360 ms) con OutExpo; valen 0 con movimiento reducido.",
+      "**Do** muestra el foco de teclado con `FocusRing` (2 px `pen`) en la hoja y con anillo blanco en la tapa."
+    ],
+    "donts": [
+      "**Don't** uses sombras, degradados ni tarjetas flotantes con borde y sombra; la profundidad es cero.",
+      "**Don't** pintes fondos verdes o azules en la hoja: el verde saturado es de la tapa y del botón principal, y el azul es tinta.",
+      "**Don't** construyas una barra lateral gris ni un panel de resumen en tarjeta; el margen y la columna derecha sobre la hoja cumplen ese papel.",
+      "**Don't** fijes tamaños de letra en píxeles en la interfaz; usa los roles de `Theme`, que siguen la escala del sistema.",
+      "**Don't** dibujes las marcas del margen con formas geométricas perfectas o iconos de casilla del sistema; son trazos a mano de `Mark`.",
+      "**Don't** pongas animaciones que bloqueen la interfaz o que ignoren `Theme.reduceMotion`."
+    ]
+  }
+}

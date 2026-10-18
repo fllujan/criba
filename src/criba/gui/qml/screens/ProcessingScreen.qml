@@ -7,6 +7,7 @@ import "../Criba/Messages.js" as Msg
 // Procesando: etapa, capítulo, tiempo restante y coste; los capítulos se marcan en el margen.
 Item {
     id: screen
+    objectName: "processingScreen"
 
     required property var backend
     signal cancelRequested()
@@ -33,14 +34,16 @@ Item {
         }
     }
 
+    // Acciones de un error del procesado. Nunca dejan la pantalla en un estado sin salida.
     function act(name) {
         switch (name) {
-        case "reintentar": backend.start(); break
+        case "reintentar":
+        case "esperar":            // el procesado se paró: seguir es volver a lanzarlo
+            backend.start(); break
         case "cambiar_clave": backend.changeKey(); break
         case "abrir_consola": backend.openConsole(); break
         case "elegir_otra_carpeta": screen.chooseFolder(); break
-        case "cancelar": screen.cancelRequested(); break
-        default: backend.dismissError()
+        default: backend.backToHome()   // "cancelar" y cualquier otra
         }
     }
 
@@ -149,11 +152,13 @@ Item {
     // Lateral: tiempo, coste y Cancelar
     Rectangle {
         x: screen.sideX - 16
+        y: 8
         width: screen.sideWidth + 32
-        height: parent.height
+        height: sideCol.implicitHeight + 40
         color: Theme.paper
     }
     ColumnLayout {
+        id: sideCol
         x: screen.sideX
         y: 24
         width: screen.sideWidth

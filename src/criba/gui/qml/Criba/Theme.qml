@@ -12,14 +12,13 @@ QtObject {
 
     // Color: plano, por regiones. La tapa es la marca; la hoja es el trabajo.
     readonly property color cover: dark ? "#34480F" : "#4E6A17"
-    readonly property color coverHover: dark ? "#3E5513" : "#435C12"
     readonly property color coverInk: "#FFFFFF"
     readonly property color coverMuted: dark ? "#D3DCC2" : "#E3EAD5"
     readonly property color label: dark ? "#20251C" : "#FFFFFF"
     readonly property color accent: dark ? "#8FB43C" : "#6B8E23"
     readonly property color accentInk: dark ? "#B9D57A" : "#3F5712"   // texto verde sobre la hoja
     readonly property color paper: dark ? "#161914" : "#FCFDFA"
-    readonly property color grid: dark ? "#20261E" : "#E6EDF2"
+    readonly property color grid: dark ? "#20261E" : "#E3EBF1"
     readonly property color ink: dark ? "#E7EBE2" : "#1F2420"
     readonly property color muted: dark ? "#A4AD9C" : "#565F55"
     readonly property color hair: dark ? "#2E352B" : "#DCE3DA"
@@ -30,9 +29,6 @@ QtObject {
     readonly property color primary: dark ? "#5B7C1D" : "#4E6A17"
     readonly property color primaryHover: dark ? "#668A22" : "#435C12"
     readonly property color danger: dark ? "#F08A7E" : "#A93226"
-    readonly property color dangerTint: dark ? "#2C1B18" : "#FBEDEA"
-    readonly property color infoTint: dark ? "#1E2433" : "#EEF2FB"
-    readonly property color highAlta: dark ? "#F08A7E" : "#C0392B"
     readonly property color scrim: dark ? "#99000000" : "#661F2420"
 
     // Tipografía: las mismas fuentes que los PDF. Respeta el tamaño de letra del sistema.

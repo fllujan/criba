@@ -29,6 +29,14 @@ ApplicationWindow {
     Component.onCompleted: Theme.forced = themeOverride
 
     function chooseFile() { fileDialog.open() }
+    function chooseFolder(retry) { folderDialog.retryRun = retry; folderDialog.open() }
+    function folderChosen(url) {
+        backend.setOutputDir(url)
+        const writeError = backend.error === "" || backend.error === "DISK_FULL" || backend.error === "CANNOT_WRITE"
+        if (folderDialog.retryRun && window.screen === "processing" && writeError)
+            backend.start()
+        folderDialog.retryRun = false
+    }
     function openOverlay(name) { overlay = overlay === name ? "" : name; if (name === "history") backend.refreshHistory() }
 
     Connections {
@@ -41,16 +49,18 @@ ApplicationWindow {
     // --- Tapa -----------------------------------------------------------------------
     CoverBar {
         id: cover
+        objectName: "cover"
         z: 2
         width: parent.width
         step: window.overlay === "" ? window.step : 0
-        showNav: window.overlay === "" && window.screen !== "setup"
+        showNav: window.overlay === "" && window.screen !== "setup" && !backend.running
         showBack: window.overlay !== ""
         labelEditable: window.overlay === "" && window.screen === "home" && backend.hasBook
-        labelTitle: labelEditable ? qsTr("Asignatura") : "Criba"
+        labelTitle: window.overlay === "" && (labelEditable || window.screen === "processing" || window.screen === "done")
+                    ? qsTr("Asignatura") : ""
         labelText: window.overlay === "settings" ? qsTr("Ajustes")
                  : window.overlay === "history" ? qsTr("Historial")
-                 : window.screen === "setup" ? qsTr("Tu cuaderno de estudio")
+                 : window.screen === "setup" ? "Criba"
                  : backend.hasBook || window.screen !== "home" ? backend.subject
                  : qsTr("Elige un libro para empezar")
         labelPlaceholder: qsTr("Escribe el nombre de la asignatura")
@@ -100,12 +110,13 @@ ApplicationWindow {
                 anchors.fill: parent
                 backend: window.backend
                 onCancelRequested: confirmCancel.open()
-                onChooseFolder: folderDialog.open()
+                onChooseFolder: window.chooseFolder(true)
             }
         }
         ScreenSlot {
             active: window.screen === "done" && window.overlay === ""
-            DoneScreen { objectName: "doneScreen"; anchors.fill: parent; backend: window.backend }
+            id: doneSlot
+            DoneScreen { objectName: "doneScreen"; anchors.fill: parent; backend: window.backend; active: doneSlot.active }
         }
 
         // Ajustes e Historial: una hoja nueva que entra desde la derecha.
@@ -133,7 +144,7 @@ ApplicationWindow {
                 anchors.fill: parent
                 visible: window.overlay === "settings"
                 backend: window.backend
-                onChooseFolder: folderDialog.open()
+                onChooseFolder: window.chooseFolder(false)
                 onClearCacheRequested: confirmClear.open()
             }
             HistoryPage {
@@ -171,12 +182,11 @@ ApplicationWindow {
     }
     FolderDialog {
         id: folderDialog
+        objectName: "folderDialog"
+        property bool retryRun: false
         title: qsTr("Elige dónde guardar los PDF")
-        onAccepted: {
-            backend.setOutputDir(String(selectedFolder))
-            if (window.screen === "processing")
-                backend.start()
-        }
+        onAccepted: window.folderChosen(String(selectedFolder))
+        onRejected: retryRun = false
     }
 
     ConfirmPopup {
@@ -213,12 +223,12 @@ ApplicationWindow {
     // --- Teclado ----------------------------------------------------------------------
     Shortcut {
         sequences: [StandardKey.Open]
-        enabled: window.screen === "home" && window.overlay === ""
+        enabled: window.screen === "home" && window.overlay === "" && !backend.loading
         onActivated: window.chooseFile()
     }
     Shortcut {
         sequences: ["Ctrl+,"]  // ⌘, en Mac
-        enabled: window.screen !== "setup"
+        enabled: window.screen !== "setup" && !backend.running
         onActivated: window.openOverlay("settings")
     }
     Shortcut {

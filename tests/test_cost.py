@@ -122,3 +122,22 @@ def test_time_estimate() -> None:
         book_cached=True,
     )
     assert cached.seconds == 0
+
+
+def test_time_estimate_small_book_counts_dependent_calls() -> None:
+    """Un capítulo de un fragmento son 3 llamadas seguidas (fragmento, capítulo, libro)."""
+    est = estimate(
+        model="claude-sonnet-5-5",
+        level="normal",
+        system_tokens=1_500,
+        chapters=[ChapterPlan([ChunkPlan(3_000, 5)])],
+    )
+    assert est.seconds >= 3 * cost.CALL_LATENCY
+    ocr = estimate(
+        model="claude-sonnet-5-5",
+        level="normal",
+        system_tokens=1_500,
+        chapters=[],
+        ocr_batches=[(5, False)] * 4,
+    )
+    assert ocr.seconds >= 4 * cost.CALL_LATENCY  # el OCR va lote a lote

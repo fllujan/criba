@@ -137,3 +137,24 @@ function pageCount(n) {
 function books(n) {
     return n === 1 ? qsTr("1 libro") : qsTr("%1 libros").arg(integer(n))
 }
+
+// «18 oct 2026»: cabe en una línea del margen.
+function shortDate(iso) {
+    const d = new Date(iso)
+    if (isNaN(d.getTime()))
+        return ""
+    const months = [qsTr("ene"), qsTr("feb"), qsTr("mar"), qsTr("abr"), qsTr("may"), qsTr("jun"),
+                    qsTr("jul"), qsTr("ago"), qsTr("sep"), qsTr("oct"), qsTr("nov"), qsTr("dic")]
+    return qsTr("%1 %2 %3").arg(d.getDate()).arg(months[d.getMonth()]).arg(d.getFullYear())
+}
+
+// Al comprobar la clave no hay nada «procesado» ni reintentos automáticos.
+function keyError(kind) {
+    switch (kind) {
+    case "INVALID_KEY": return qsTr("La clave de API no es válida o ha caducado. Revisa que la has copiado entera.")
+    case "NO_CREDIT": return qsTr("La clave es correcta, pero tu cuenta de Anthropic no tiene saldo. Añádelo en la consola y vuelve a probar.")
+    case "OFFLINE": return qsTr("No hay conexión a Internet. Conéctate y vuelve a probar.")
+    case "NO_KEY": return qsTr("No se ha podido guardar la clave en el llavero del sistema.")
+    default: return qsTr("Anthropic no responde ahora mismo. Inténtalo de nuevo en unos minutos.")
+    }
+}

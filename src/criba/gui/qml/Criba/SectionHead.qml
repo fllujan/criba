@@ -8,6 +8,7 @@ Item {
     property string title: ""
     property string detail: ""
     property int ringOffset: -48
+    property string markMode: ""   // estado en la celda del margen en vez de un número
 
     implicitHeight: Theme.row
     Accessible.role: Accessible.Heading
@@ -17,6 +18,12 @@ Item {
         visible: head.number !== ""
         number: head.number
         x: head.ringOffset
+        anchors.verticalCenter: parent.verticalCenter
+    }
+    Mark {
+        visible: head.markMode !== ""
+        mode: head.markMode
+        x: head.ringOffset + 2
         anchors.verticalCenter: parent.verticalCenter
     }
     Text {

@@ -26,7 +26,7 @@ Item {
             width: Math.min(680, page.width - Theme.contentX - 48)
             spacing: 0
 
-            SectionHead { Layout.fillWidth: true; number: "1"; title: qsTr("Clave de API") }
+            SectionHead { Layout.fillWidth: true; title: qsTr("Clave de API"); markMode: backend.hasKey ? "on" : "off" }
             Body {
                 Layout.fillWidth: true
                 Layout.topMargin: 8
@@ -46,7 +46,7 @@ Item {
                 }
             }
 
-            SectionHead { Layout.fillWidth: true; Layout.topMargin: 40; number: "2"; title: qsTr("Modelo de IA") }
+            SectionHead { Layout.fillWidth: true; Layout.topMargin: 40; title: qsTr("Modelo de IA") }
             ButtonGroup { id: modelGroup }
             Repeater {
                 model: backend.models
@@ -93,7 +93,7 @@ Item {
                 }
             }
 
-            SectionHead { Layout.fillWidth: true; Layout.topMargin: 40; number: "3"; title: qsTr("Carpeta de los PDF") }
+            SectionHead { Layout.fillWidth: true; Layout.topMargin: 40; title: qsTr("Carpeta de los PDF") }
             Text {
                 Layout.fillWidth: true
                 Layout.topMargin: 8
@@ -111,7 +111,7 @@ Item {
                 QuietButton { text: qsTr("Usar Documentos/Criba"); onClicked: backend.setOutputDir("") }
             }
 
-            SectionHead { Layout.fillWidth: true; Layout.topMargin: 40; number: "4"; title: qsTr("Idioma de los PDF") }
+            SectionHead { Layout.fillWidth: true; Layout.topMargin: 40; title: qsTr("Idioma de los PDF") }
             ComboBox {
                 id: languageBox
                 Layout.topMargin: 12
@@ -148,7 +148,7 @@ Item {
                 }
             }
 
-            SectionHead { Layout.fillWidth: true; Layout.topMargin: 40; number: "5"; title: qsTr("Lo ya procesado") }
+            SectionHead { Layout.fillWidth: true; Layout.topMargin: 40; title: qsTr("Lo ya procesado") }
             Body {
                 Layout.fillWidth: true
                 Layout.topMargin: 8
@@ -162,7 +162,7 @@ Item {
                 onClicked: page.clearCacheRequested()
             }
 
-            SectionHead { Layout.fillWidth: true; Layout.topMargin: 40; number: "6"; title: qsTr("Privacidad") }
+            SectionHead { Layout.fillWidth: true; Layout.topMargin: 40; title: qsTr("Privacidad") }
             Body {
                 Layout.fillWidth: true
                 Layout.topMargin: 8

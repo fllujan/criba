@@ -31,6 +31,17 @@ criba libro.pdf --capitulos 2,3 --paginas 10-80 --nivel completo --examen test
 
 La clave de API se lee de `ANTHROPIC_API_KEY` o del llavero del sistema. Lo procesado se guarda en caché: si cancelas (Ctrl+C) o repites el mismo libro, lo ya pagado no se vuelve a pagar.
 
+### Interfaz
+
+```bash
+uv run python -m criba                                    # la app
+CRIBA_THEME=dark uv run python -m criba                   # forzar modo oscuro (o light)
+uv run python scripts/screenshots.py capturas/ [--dark] [--size 900x640]  # capturas con IA simulada
+uv run python scripts/update_translations.py              # actualiza assets/i18n/*.ts
+```
+
+El diseño («Cuaderno de cuadros») está documentado en `DESIGN.md`; los tokens viven en `src/criba/gui/qml/Criba/Theme.qml`.
+
 ### Calidad
 
 ```bash

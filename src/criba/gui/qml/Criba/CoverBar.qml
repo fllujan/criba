@@ -20,6 +20,7 @@ Rectangle {
 
     implicitHeight: 80
     color: Theme.cover
+    readonly property bool narrow: width < 1000
 
     // El campo se edita a mano; si la asignatura cambia desde fuera (otro libro), se actualiza.
     onLabelTextChanged: if (labelInput.text !== labelText) labelInput.text = labelText
@@ -32,18 +33,20 @@ Rectangle {
 
         // Etiqueta blanca de la tapa: aquí se escribe la asignatura.
         Rectangle {
-            Layout.preferredWidth: Math.min(400, bar.width * 0.36)
+            Layout.preferredWidth: bar.narrow ? bar.width * 0.30 : Math.min(400, bar.width * 0.36)
             Layout.preferredHeight: 52
             radius: 10
             color: Theme.label
 
             Column {
-                anchors.fill: parent
+                anchors.left: parent.left
+                anchors.right: parent.right
                 anchors.leftMargin: 16
                 anchors.rightMargin: 16
-                anchors.topMargin: 7
+                anchors.verticalCenter: parent.verticalCenter
                 spacing: 1
                 Text {
+                    visible: bar.labelTitle !== ""
                     text: bar.labelTitle
                     color: Theme.accentInk
                     font.family: Theme.sans
@@ -53,14 +56,16 @@ Rectangle {
                 }
                 TextInput {
                     id: labelInput
+                    objectName: "subjectInput"
                     width: parent.width
                     visible: bar.labelEditable
                     Component.onCompleted: text = bar.labelText
-                    color: Theme.ink
+                    color: activeFocus ? Theme.ink : "transparent"
                     font.family: Theme.sans
                     font.pixelSize: Theme.bodyLarge
                     font.weight: Font.Medium
                     clip: true
+                    autoScroll: activeFocus  // sin foco se ve el principio del nombre
                     selectByMouse: true
                     selectionColor: Theme.accent
                     selectedTextColor: Theme.coverInk
@@ -74,11 +79,28 @@ Rectangle {
                         color: Theme.muted
                         font: labelInput.font
                     }
-                    Rectangle {
-                        y: parent.height + 1
-                        width: parent.width
-                        height: 1
-                        color: labelInput.activeFocus ? Theme.pen : Theme.fieldBorder
+                    // Sin foco: el nombre entero con «…» si no cabe; al editar, el campo real.
+                    Text {
+                        objectName: "subjectPreview"
+                        anchors.fill: parent
+                        visible: !labelInput.activeFocus && labelInput.text !== ""
+                        text: labelInput.text
+                        color: Theme.ink
+                        font: labelInput.font
+                        elide: Text.ElideRight
+                    }
+                }
+                // Raya discontinua: aquí se escribe, como en la etiqueta de la tapa.
+                Row {
+                    visible: bar.labelEditable
+                    spacing: 3
+                    Repeater {
+                        model: Math.max(0, Math.ceil(labelInput.width / 6))
+                        delegate: Rectangle {
+                            width: 3
+                            height: labelInput.activeFocus ? 2 : 1
+                            color: labelInput.activeFocus ? Theme.pen : Theme.fieldBorder
+                        }
                     }
                 }
                 Text {
@@ -98,8 +120,8 @@ Rectangle {
         Row {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignCenter
-            spacing: 28
-            visible: bar.step > 0 && bar.width > 1000
+            spacing: bar.narrow ? 16 : 28
+            visible: bar.step > 0
             Accessible.role: Accessible.List
             Accessible.name: qsTr("Pasos")
             Repeater {
@@ -130,6 +152,7 @@ Rectangle {
                     }
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
+                        visible: stepItem.current || !bar.narrow
                         text: stepItem.modelData
                         color: stepItem.current ? Theme.coverInk : Theme.coverMuted
                         font.family: Theme.sans
@@ -139,7 +162,7 @@ Rectangle {
                 }
             }
         }
-        Item { Layout.fillWidth: true; visible: !(bar.step > 0 && bar.width > 1000) }
+        Item { Layout.fillWidth: true; visible: bar.step === 0 }
 
         Row {
             spacing: 4

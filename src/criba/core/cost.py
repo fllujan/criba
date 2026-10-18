@@ -113,6 +113,8 @@ class Estimate:
     calls: int = 0
     cached_calls: int = 0
     usage: Usage = field(default_factory=Usage)
+    # (llamadas pendientes, tokens de salida, llamadas a la vez) por etapa, en orden
+    stages: list[tuple[int, int, int]] = field(default_factory=list)
 
     @property
     def usd(self) -> float:
@@ -126,12 +128,17 @@ class Estimate:
 
     @property
     def seconds(self) -> float:
-        """Tiempo estimado de las llamadas que faltan (lo que está en caché es instantáneo)."""
-        pending = self.calls - self.cached_calls
-        if not pending:
-            return 0.0
-        busy = self.usage.output / OUTPUT_TOKENS_PER_SECOND + pending * CALL_LATENCY
-        return busy / PARALLEL_CALLS
+        """Tiempo estimado de lo que falta (lo que está en caché es instantáneo).
+
+        Las etapas van una tras otra (OCR → fragmentos → capítulos → libro) y dentro
+        de cada una hay como mucho ``PARALLEL_CALLS`` llamadas a la vez.
+        """
+        total = 0.0
+        for calls, output, parallel in self.stages:
+            if calls:
+                busy = output / OUTPUT_TOKENS_PER_SECOND + calls * CALL_LATENCY
+                total += busy / min(parallel, calls)
+        return total
 
 
 def estimate(
@@ -149,16 +156,26 @@ def estimate(
     """
     est = Estimate(model=model)
     map_outputs: list[int] = []
+    # Etapas en el orden del pipeline: el OCR va lote a lote; el resto, 4 a la vez.
+    work = {
+        "ocr": [0, 0, 1],
+        "map": [0, 0, PARALLEL_CALLS],
+        "reduce": [0, 0, PARALLEL_CALLS],
+        "book": [0, 0, 1],
+    }
 
-    def add(inp: int, out: int, *, cached: bool) -> None:
+    def add(stage: str, inp: int, out: int, *, cached: bool) -> None:
         est.calls += 1
         if cached:
             est.cached_calls += 1
             return
-        est.usage += Usage(input=inp, output=math.ceil(out * THINKING_FACTOR))
+        tokens = math.ceil(out * THINKING_FACTOR)
+        est.usage += Usage(input=inp, output=tokens)
+        work[stage][0] += 1
+        work[stage][1] += tokens
 
     for n, cached in ocr_batches or []:
-        add(system_tokens + n * OCR_INPUT_PER_PAGE, n * OCR_OUTPUT_PER_PAGE, cached=cached)
+        add("ocr", system_tokens + n * OCR_INPUT_PER_PAGE, n * OCR_OUTPUT_PER_PAGE, cached=cached)
 
     for chapter in chapters:
         if not chapter.chunks:
@@ -167,9 +184,10 @@ def estimate(
         for ch in chapter.chunks:
             out = round(target_words(ch.pages, level) * TOKENS_PER_WORD) + MAP_OUTPUT_OVERHEAD
             outputs.append(out)
-            add(system_tokens + ch.tokens, out, cached=ch.cached)
+            add("map", system_tokens + ch.tokens, out, cached=ch.cached)
         reduce_in = sum(outputs)
         add(
+            "reduce",
             system_tokens + reduce_in,
             round(reduce_in * REDUCE_OUTPUT_RATIO),
             cached=chapter.cached,
@@ -178,8 +196,10 @@ def estimate(
 
     if map_outputs:
         add(
+            "book",
             system_tokens + len(map_outputs) * BOOK_INPUT_PER_CHAPTER,
             BOOK_OUTPUT,
             cached=book_cached,
         )
+    est.stages = [(c, o, par) for c, o, par in work.values()]
     return est

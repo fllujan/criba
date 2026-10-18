@@ -1,27 +1,37 @@
 import QtQuick
 import QtQuick.Layouts
 
-// Mensaje en la hoja: el problema en lenguaje normal y lo que puedes hacer.
-Rectangle {
+// Mensaje en la hoja, entre dos filetes: el problema en lenguaje normal y qué puedes hacer.
+// Los errores llevan una marca tachada en la celda del margen, como una corrección a boli.
+Item {
     id: notice
 
     property string kind: "error"   // "error" | "info"
     property string text: ""
+    property bool marginMark: true  // solo si el aviso está en la columna principal
     property alias actions: actionRow.data
+    readonly property color rule: kind === "error" ? Theme.danger : Theme.pen
 
     implicitHeight: col.implicitHeight + 32
-    radius: 8
-    color: kind === "error" ? Theme.dangerTint : Theme.infoTint
-    border.width: 1
-    border.color: kind === "error" ? Qt.rgba(Theme.danger.r, Theme.danger.g, Theme.danger.b, 0.35)
-                                   : Qt.rgba(Theme.pen.r, Theme.pen.g, Theme.pen.b, 0.3)
     Accessible.role: Accessible.AlertMessage
     Accessible.name: text
 
+    Rectangle { width: parent.width; height: 1; color: notice.rule; opacity: 0.6 }
+    Rectangle { y: parent.height - 1; width: parent.width; height: 1; color: notice.rule; opacity: 0.6 }
+
+    Mark {
+        visible: notice.kind === "error" && notice.marginMark
+        x: 82 - Theme.contentX
+        y: 16
+        mode: "struck"
+        color: Theme.danger
+    }
+
     ColumnLayout {
         id: col
-        anchors.fill: parent
-        anchors.margins: 16
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
         spacing: 12
         Body {
             Layout.fillWidth: true

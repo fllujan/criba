@@ -3,6 +3,7 @@
 import contextlib
 import errno
 import logging
+import uuid
 from pathlib import Path
 
 from criba.core.errors import CribaError, ErrorKind
@@ -28,7 +29,9 @@ def render_book(libro: Libro, out_dir: Path) -> tuple[Path, Path]:
     from criba.render import outline_pdf, summary_pdf  # noqa: PLC0415
 
     finals = [out_dir / name for name in output_names(libro.asignatura)]
-    temps = [p.with_name(f".{p.name}.tmp") for p in finals]
+    # Nombres temporales únicos: dos generaciones a la vez no se pisan.
+    tag = uuid.uuid4().hex[:8]
+    temps = [p.with_name(f".{p.name}.{tag}.tmp") for p in finals]
     try:
         out_dir.mkdir(parents=True, exist_ok=True)
         summary_pdf.render(libro, temps[0])

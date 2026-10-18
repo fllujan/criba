@@ -355,19 +355,24 @@ class AnthropicClient:
         raise CribaError(kind, detail=repr(last))
 
 
+KEY_CHECK_TIMEOUT = 30.0  # segundos: la comprobación es una consulta pequeña
+
+
 def check_api_key(api_key: str, model: str = DEFAULT_MODEL) -> None:
     """Comprueba la clave sin gastar (consulta el modelo). Lanza ``CribaError``."""
-    sdk = anthropic.Anthropic(api_key=api_key, max_retries=2)
+    sdk = anthropic.Anthropic(api_key=api_key, max_retries=2, timeout=KEY_CHECK_TIMEOUT)
     try:
         sdk.models.retrieve(model)
     except (anthropic.AuthenticationError, anthropic.PermissionDeniedError) as exc:
         raise CribaError(ErrorKind.INVALID_KEY, detail=repr(exc)) from exc
-    except anthropic.APIConnectionError as exc:
+    except anthropic.APIConnectionError as exc:  # incluye el tiempo de espera agotado
         raise CribaError(ErrorKind.OFFLINE, detail=repr(exc)) from exc
     except anthropic.APIStatusError as exc:
         if _is_billing(exc):
             raise CribaError(ErrorKind.NO_CREDIT, detail=repr(exc)) from exc
-        raise CribaError(ErrorKind.RATE_LIMITED, detail=repr(exc)) from exc
+        if exc.status_code == 429:  # noqa: PLR2004
+            raise CribaError(ErrorKind.RATE_LIMITED, detail=repr(exc)) from exc
+        raise CribaError(ErrorKind.SERVICE_ERROR, detail=repr(exc)) from exc
 
 
 def dumps(obj: object) -> str:

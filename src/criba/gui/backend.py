@@ -118,6 +118,10 @@ class Backend(QObject):
 
         self._loading = False
         self._load_fraction = 0.0
+        # «Continuar donde lo dejaste» usa el modelo e idioma de entonces (la caché va con ellos).
+        self._book_model: str | None = None
+        self._book_language: tuple[str | None] | None = None
+        self._regenerating = False
         self._prep: Prepared | None = None
         self._subject = ""
         self._level = "normal"
@@ -183,10 +187,14 @@ class Backend(QObject):
             self._cancel.cancel()
         self.wait_idle()
 
-    def wait_idle(self, ms: int = 30_000) -> None:
-        """Espera a que terminen los hilos y entrega sus resultados (al cerrar y en tests)."""
+    def wait_idle(self) -> None:
+        """Espera a que terminen los hilos y entrega sus resultados (al cerrar y en tests).
+
+        Sin límite de tiempo: destruir un QThread vivo aborta la app. Lo único largo
+        (procesar) ya se ha cancelado; leer un libro o comprobar la clave acaban solos.
+        """
         for task in list(self._tasks):
-            task.wait(ms)
+            task.wait()
         QCoreApplication.sendPostedEvents()
         QCoreApplication.processEvents()
 
@@ -205,6 +213,19 @@ class Backend(QObject):
             self._notice = notice
             self.noticeChanged.emit()
 
+    def _model(self) -> str:
+        return self._book_model or self._settings.model
+
+    def _language(self) -> str | None:
+        return self._book_language[0] if self._book_language else self._settings.language
+
+    def _busy(self) -> bool:
+        """Hay un procesado en marcha: no se cambia nada que le afecte."""
+        if self._cancel is not None:
+            log.info("Acción ignorada: hay un procesado en marcha")
+            return True
+        return False
+
     def _options(self) -> Options:
         checked = self.chapters.checked_indices()
         all_checked = len(checked) == len(self.chapters)
@@ -215,7 +236,7 @@ class Backend(QObject):
             asignatura=self._subject.strip() or "Criba",
             nivel=self._level,  # type: ignore[arg-type]
             tipo_examen=self._exam,  # type: ignore[arg-type]
-            idioma=self._settings.language,
+            idioma=self._language(),
             chapters=None if all_checked else tuple(checked),
             page_range=page_range,
             output_dir=self._settings.output_path,
@@ -439,6 +460,16 @@ class Backend(QObject):
 
     etaSeconds = Property(float, _get_eta, notify=progressChanged)
 
+    def _get_running(self) -> bool:
+        return self._cancel is not None
+
+    running = Property(bool, _get_running, notify=progressChanged)
+
+    def _get_regenerating(self) -> bool:
+        return self._regenerating
+
+    regenerating = Property(bool, _get_regenerating, notify=historyChanged)
+
     def _get_cancelling(self) -> bool:
         return self._cancelling
 
@@ -490,7 +521,7 @@ class Backend(QObject):
 
     # Ajustes (RF-17)
     def _get_model(self) -> str:
-        return self._settings.model
+        return self._model()
 
     model = Property(str, _get_model, notify=settingsChanged)
 
@@ -505,7 +536,7 @@ class Backend(QObject):
     outputDir = Property(str, _get_output_dir, notify=settingsChanged)
 
     def _get_language(self) -> str:
-        return self._settings.language or ""
+        return self._language() or ""
 
     language = Property(str, _get_language, notify=settingsChanged)
 
@@ -579,6 +610,8 @@ class Backend(QObject):
     @Slot()
     def changeKey(self) -> None:
         """Abre el asistente de la clave."""
+        if self._busy():
+            return
         self._key_status, self._key_error = "", ""
         self.keyChanged.emit()
         self._set_screen("setup")
@@ -592,6 +625,8 @@ class Backend(QObject):
     @Slot()
     def forgetKey(self) -> None:
         """Borra la clave del llavero."""
+        if self._busy():
+            return
         settings.delete_api_key()
         self._has_key = settings.get_api_key() is not None
         self.keyChanged.emit()
@@ -606,16 +641,24 @@ class Backend(QObject):
         self._open(_local_path(url), None)
 
     def _open(self, path: Path, saved: dict[str, Any] | None) -> None:
-        if self._loading:
+        if self._loading or self._busy():
             return
+        self._book_model = None
+        self._book_language = None
+        if saved:
+            if saved.get("modelo") in PRICES:
+                self._book_model = str(saved["modelo"])
+            if "idioma" in saved:
+                idioma = saved["idioma"]
+                self._book_language = (idioma if idioma in LANGUAGE_NAMES else None,)
         self._loading, self._load_fraction = True, 0.0
         self._set_error(None)
         self._set_notice("")
         self.bookChanged.emit()
-        model = self._settings.model
+        model = self._model()
         cache = self._cache
         output_dir = self._settings.output_path
-        language = self._settings.language
+        language = self._language()
 
         def job(report: Report) -> object:
             title = (saved or {}).get("asignatura") or ingest.validate(path).title
@@ -670,6 +713,8 @@ class Backend(QObject):
     @Slot()
     def closeBook(self) -> None:
         """Quita el libro cargado (Elegir otro archivo)."""
+        if self._busy():
+            return
         self._prep = None
         self.chapters.reset([])
         self._set_error(None)
@@ -701,7 +746,7 @@ class Backend(QObject):
             self._schedule_replan()
 
     def _schedule_replan(self) -> None:
-        if self._prep is None or self._loading:
+        if self._prep is None or self._loading or self._cancel is not None:
             return
         self._estimating = True
         self.estimateChanged.emit()
@@ -717,6 +762,8 @@ class Backend(QObject):
         self._estimating = True
         self.estimateChanged.emit()
         prep, options, cache = self._prep, self._options(), self._cache
+        if prep.model != self._model():
+            prep = replace(prep, model=self._model())
 
         def job(_report: Report) -> object:
             return replan(prep, options, cache)
@@ -727,7 +774,9 @@ class Backend(QObject):
         self._replan_running = False
         if self._prep is not None and prep.book is self._prep.book:
             self._prep = prep
-        if self._replan_dirty:
+            if prep.model != self._model():  # el modelo cambió mientras se estimaba
+                self._replan_dirty = True
+        if self._replan_dirty and self._cancel is None:
             self._start_replan()
             return
         self._estimating = False
@@ -735,6 +784,9 @@ class Backend(QObject):
 
     def _replan_failed(self, exc: BaseException) -> None:
         self._replan_running = False
+        if self._replan_dirty:
+            self._start_replan()
+            return
         self._estimating = False
         self.estimateChanged.emit()
         self._set_error(_error_kind(exc), "book")
@@ -753,6 +805,8 @@ class Backend(QObject):
             return
         options = self._options()
         prep, cache = self._prep, self._cache
+        if prep.model != self._model():
+            prep = replace(prep, model=self._model())
         try:
             llm = self._llm_factory(key, prep.model)
         except Exception as exc:
@@ -828,6 +882,8 @@ class Backend(QObject):
     @Slot()
     def processAnother(self) -> None:
         """Procesar otro libro."""
+        if self._busy():
+            return
         self._done = None
         self._progress = None
         self.resultChanged.emit()
@@ -873,17 +929,20 @@ class Backend(QObject):
     @Slot(str)
     def setModel(self, model: str) -> None:
         """Cambia el modelo (y rehace la estimación)."""
-        if model in PRICES and model != self._settings.model:
+        if self._busy():
+            return
+        if model in PRICES and model != self._model():
             self._settings.model = model
+            self._book_model = None
             settings.save(self._settings)
-            if self._prep is not None:
-                self._prep = replace(self._prep, model=model)
-                self._schedule_replan()
+            self._schedule_replan()
             self.settingsChanged.emit()
 
     @Slot(str)
     def setOutputDir(self, url: str) -> None:
         """Carpeta donde se guardan los PDF."""
+        if self._busy():
+            return
         path = _local_path(url) if url else None
         self._settings.output_dir = str(path) if path else None
         settings.save(self._settings)
@@ -894,9 +953,12 @@ class Backend(QObject):
     @Slot(str)
     def setLanguage(self, code: str) -> None:
         """Idioma de los PDF; vacío = el del libro."""
+        if self._busy():
+            return
         value = code if code in LANGUAGE_NAMES else None
-        if value != self._settings.language:
+        if value != self._language():
             self._settings.language = value
+            self._book_language = None
             settings.save(self._settings)
             self.settingsChanged.emit()
             self._schedule_replan()
@@ -904,6 +966,8 @@ class Backend(QObject):
     @Slot()
     def clearCache(self) -> None:
         """Borra la caché (lo procesado se volvería a pagar)."""
+        if self._busy():
+            return
         self._cache.clear()
         log.info("Caché borrada")
         self.settingsChanged.emit()
@@ -932,7 +996,12 @@ class Backend(QObject):
             )
         self.history.reset(rows)
         self._resume = None
+        finished: dict[str, int] = {}
+        for done in self._cache.jobs("done"):
+            finished[done.book_sha] = max(finished.get(done.book_sha, 0), done.id)
         for job in self._cache.interrupted_jobs():
+            if finished.get(job.book_sha, 0) > job.id:
+                continue  # ese libro se terminó después (quizá con otras opciones)
             if job.pdf_path.exists():
                 self._resume = {"title": job.title, "pdf": job.pdf_path, "options": job.options}
                 break
@@ -941,12 +1010,14 @@ class Backend(QObject):
     @Slot()
     def resume(self) -> None:
         """Continuar donde lo dejaste: carga el libro con las opciones de entonces."""
-        if self._resume:
+        if self._resume and not self._busy():
             self._open(Path(self._resume["pdf"]), dict(self._resume["options"]))
 
     @Slot(int)
     def regenerate(self, job_id: int) -> None:
         """Vuelve a generar los PDF desde «datos.json» (sin IA, sin coste)."""
+        if self._regenerating or self._busy():
+            return
         row = self.history.row(job_id)
         if row is None or not row.data:
             self._set_error(ErrorKind.NOT_FOUND, "history")
@@ -962,9 +1033,17 @@ class Backend(QObject):
             summary, outline = render_book(libro, out_dir)
             return Done(summary, outline, 0.0, list(libro.paginas_no_procesadas))
 
-        self._spawn(job, self._regenerated, lambda e: self._set_error(_error_kind(e), "history"))
+        self._regenerating = True
+        self.historyChanged.emit()
+        self._spawn(job, self._regenerated, self._regenerate_failed)
+
+    def _regenerate_failed(self, exc: BaseException) -> None:
+        self._regenerating = False
+        self.historyChanged.emit()
+        self._set_error(_error_kind(exc), "history")
 
     def _regenerated(self, done: Done) -> None:
+        self._regenerating = False
         self._done = done
         self.resultChanged.emit()
         self.refreshHistory()

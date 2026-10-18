@@ -269,3 +269,27 @@ def test_check_api_key_ok(monkeypatch) -> None:
     monkeypatch.setattr(anthropic, "Anthropic", SDK)
     llm.check_api_key("sk-ant-buena")
     assert calls[0]["api_key"] == "sk-ant-buena"
+
+
+@pytest.mark.parametrize(
+    ("status", "kind"),
+    [(429, ErrorKind.RATE_LIMITED), (500, ErrorKind.SERVICE_ERROR), (404, ErrorKind.SERVICE_ERROR)],
+)
+def test_check_api_key_status_errors(monkeypatch, status, kind) -> None:
+
+    class SDK:
+        def __init__(self, **kw):
+            assert kw["timeout"] == llm.KEY_CHECK_TIMEOUT
+            self.models = SimpleNamespace(retrieve=self.retrieve)
+
+        def retrieve(self, _model):
+            request = httpx2.Request("GET", "https://api.anthropic.com/v1/models/x")
+            response = httpx2.Response(
+                status, request=request, json={"error": {"type": "api_error", "message": "x"}}
+            )
+            raise anthropic.APIStatusError("x", response=response, body=None)
+
+    monkeypatch.setattr(llm.anthropic, "Anthropic", SDK)
+    with pytest.raises(CribaError) as exc:
+        llm.check_api_key("sk-ant-x")
+    assert exc.value.kind is kind

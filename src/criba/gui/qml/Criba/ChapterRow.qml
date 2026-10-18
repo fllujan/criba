@@ -55,6 +55,7 @@ AbstractButton {
              : row.hovered ? Qt.rgba(Theme.selection.r, Theme.selection.g, Theme.selection.b, 0.55)
              : Theme.paper
         Behavior on color { ColorAnimation { duration: Theme.fast } }
+        FocusRing { shown: row.highlighted; gap: 0 }
 
         Text {
             anchors.left: parent.left

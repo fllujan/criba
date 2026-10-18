@@ -18,6 +18,7 @@ import keyring
 import keyring.backend
 from PySide6.QtCore import QCoreApplication, QElapsedTimer, QtMsgType, qInstallMessageHandler
 from PySide6.QtGui import QGuiApplication
+from PySide6.QtQuick import QQuickItem
 from PySide6.QtQuickControls2 import QQuickStyle
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -118,6 +119,11 @@ def main() -> int:
         backend.setChapterChecked(0, False)
         wait(3000, lambda: not backend.estimating)
         shot("03-home-book")
+        chapter_list = win.findChild(QQuickItem, "chapterList")
+        chapter_list.setProperty("currentIndex", 1)
+        chapter_list.forceActiveFocus()
+        shot("03b-home-keyboard-focus")
+        win.contentItem().forceActiveFocus()
         slow["on"] = True
         backend.start()
         wait(1500)

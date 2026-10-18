@@ -38,7 +38,9 @@ Item {
             Layout.leftMargin: Theme.contentX
             Layout.topMargin: 16
             visible: backend.error !== "" && backend.errorWhere === "history"
-            text: qsTr("No se encuentran los datos de ese libro. Vuelve a procesarlo desde Inicio; lo que ya estaba procesado no se paga.")
+            text: backend.error === "NOT_FOUND"
+                  ? qsTr("No se encuentran los datos de ese libro. Vuelve a procesarlo desde Inicio; lo que ya estaba procesado no se paga.")
+                  : Msg.error(backend.error)
             actions: [ QuietButton { text: qsTr("Entendido"); onClicked: backend.dismissError() } ]
         }
 
@@ -77,13 +79,12 @@ Item {
                     width: 72
                     anchors.verticalCenter: parent.verticalCenter
                     horizontalAlignment: Text.AlignRight
-                    text: Msg.date(entry.date)
+                    text: Msg.shortDate(entry.date)
                     color: Theme.pen
                     font.family: Theme.serif
                     font.italic: true
                     font.pixelSize: Theme.small
-                    wrapMode: Text.WordWrap
-                    maximumLineCount: 2
+                    elide: Text.ElideLeft
                 }
                 Rectangle {
                     x: Theme.contentX
@@ -128,8 +129,8 @@ Item {
                             onClicked: backend.openFile(entry.outline)
                         }
                         QuietButton {
-                            text: qsTr("Regenerar")
-                            enabled: entry.dataFile !== ""
+                            text: backend.regenerating ? qsTr("Generando…") : qsTr("Regenerar")
+                            enabled: entry.dataFile !== "" && !backend.regenerating
                             onClicked: backend.regenerate(entry.jobId)
                         }
                     }

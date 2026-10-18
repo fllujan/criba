@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
+import QtQuick.Shapes
 import Criba
 import "../Criba/Messages.js" as Msg
 
@@ -35,28 +36,29 @@ Item {
                 id: drop
                 Layout.fillWidth: true
                 Layout.preferredHeight: Math.max(240, Math.min(360, screen.height - 280))
-                radius: 12
-                color: screen.dropHover ? Theme.selection : Qt.rgba(Theme.paper.r, Theme.paper.g, Theme.paper.b, 0.88)
-                border.width: screen.dropHover ? 2 : 1
-                border.color: screen.dropHover ? Theme.accent : Theme.fieldBorder
+                color: screen.dropHover ? Theme.selection : "transparent"
+                border.width: screen.dropHover ? 2 : 0
+                border.color: Theme.accent
                 Behavior on color { ColorAnimation { duration: Theme.fast } }
 
-                // Borde discontinuo a mano: se dibuja encima del borde fino.
-                Canvas {
+                Ring { number: "1"; x: -48; y: 0 }
+
+                // Raya discontinua a bolígrafo: el hueco donde va el libro.
+                Shape {
                     anchors.fill: parent
                     visible: !screen.dropHover
-                    onPaint: {
-                        const ctx = getContext("2d")
-                        ctx.reset()
-                        ctx.strokeStyle = Theme.fieldBorder
-                        ctx.lineWidth = 1.5
-                        ctx.setLineDash([6, 5])
-                        ctx.beginPath()
-                        ctx.roundedRect(1, 1, width - 2, height - 2, 12, 12)
-                        ctx.stroke()
+                    ShapePath {
+                        strokeColor: Theme.pen
+                        strokeWidth: 1
+                        strokeStyle: ShapePath.DashLine
+                        dashPattern: [4, 4]
+                        fillColor: "transparent"
+                        startX: 0.5; startY: 0.5
+                        PathLine { x: drop.width - 0.5; y: 0.5 }
+                        PathLine { x: drop.width - 0.5; y: drop.height - 0.5 }
+                        PathLine { x: 0.5; y: drop.height - 0.5 }
+                        PathLine { x: 0.5; y: 0.5 }
                     }
-                    onWidthChanged: requestPaint()
-                    onHeightChanged: requestPaint()
                 }
 
                 ColumnLayout {
@@ -214,6 +216,7 @@ Item {
 
             ListView {
                 id: chapterList
+                objectName: "chapterList"
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 Layout.topMargin: 12
@@ -296,8 +299,9 @@ Item {
         // Columna derecha: opciones, coste y Generar
         Rectangle {
             x: screen.sideX - 16
+            y: 8
             width: screen.sideWidth + 32
-            height: parent.height
+            height: Math.min(parent.height - 8, side.implicitHeight + 40)
             color: Theme.paper
         }
         Flickable {
@@ -425,8 +429,23 @@ Item {
                     Layout.fillWidth: true
                     Layout.topMargin: 16
                     kind: "info"
+                    marginMark: false
                     visible: backend.notice === "cancelled"
                     text: qsTr("Has cancelado. Lo procesado está guardado: el coste de arriba es solo lo que falta.")
+                }
+                Notice {
+                    objectName: "homeError"
+                    Layout.fillWidth: true
+                    Layout.topMargin: 16
+                    marginMark: false
+                    visible: backend.error !== "" && (backend.errorWhere === "book" || backend.errorWhere === "run")
+                    text: Msg.error(backend.error)
+                    actions: [
+                        QuietButton {
+                            text: qsTr("Entendido")
+                            onClicked: backend.dismissError()
+                        }
+                    ]
                 }
                 PrimaryButton {
                     objectName: "generateButton"

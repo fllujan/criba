@@ -31,6 +31,6 @@ Item {
         font.family: Theme.serif
         font.italic: true
         font.weight: Font.Medium
-        font.pixelSize: 16
+        font.pixelSize: Math.round(16 * Math.min(Theme.scale, 1.25))  // cabe en el anillo de 32 px
     }
 }

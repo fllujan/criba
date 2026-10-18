@@ -31,3 +31,7 @@ Thumbs.db
 # Impeccable: binario del detector (se reinstala con npx impeccable install)
 .claude/skills/impeccable/scripts/bin/
 tests/fixtures/*.pdf
+
+# Impeccable: capturas y preguntas locales
+.impeccable/review/
+.impeccable/questions/

@@ -9,12 +9,14 @@ Item {
     id: screen
 
     required property var backend
+    property bool active: false
 
     component Sheet: ColumnLayout {
         id: sheet
         property string path: ""
         property string caption: ""
         property string openText: ""
+        property bool primary: false   // una sola acción principal por pantalla
         spacing: 12
 
         AbstractButton {
@@ -53,6 +55,14 @@ Item {
             elide: Text.ElideRight
         }
         PrimaryButton {
+            visible: sheet.primary
+            Layout.preferredWidth: thumbWidth
+            implicitHeight: 44
+            text: sheet.openText
+            onClicked: backend.openFile(sheet.path)
+        }
+        QuietButton {
+            visible: !sheet.primary
             Layout.preferredWidth: thumbWidth
             implicitHeight: 44
             text: sheet.openText
@@ -60,7 +70,7 @@ Item {
         }
     }
 
-    readonly property int thumbWidth: Math.max(180, Math.min(260, (width - Theme.contentX - 96) / 3))
+    readonly property int thumbWidth: Math.max(120, Math.min(260, (width - Theme.contentX - 96) / 3, (height - 310) / 1.414))
 
     Flickable {
         anchors.fill: parent
@@ -76,15 +86,17 @@ Item {
             width: screen.width - Theme.contentX - 48
             spacing: 0
 
-            Row {
-                spacing: 12
+            Item {
+                implicitWidth: doneTitle.implicitWidth
+                implicitHeight: doneTitle.implicitHeight
+                // La marca final, en su celda del margen: se dibuja de un trazo al llegar.
                 Mark {
-                    width: 28
-                    height: 28
-                    mode: "on"
+                    x: 82 - Theme.contentX
                     anchors.verticalCenter: parent.verticalCenter
+                    mode: screen.active ? "on" : "off"
                 }
                 Text {
+                    id: doneTitle
                     text: qsTr("Ya tienes tus dos PDF")
                     color: Theme.ink
                     font.family: Theme.sans
@@ -116,6 +128,7 @@ Item {
                 spacing: 48
                 Sheet {
                     path: backend.summaryPath
+                    primary: true
                     caption: qsTr("Resumen para estudiar")
                     openText: qsTr("Abrir resumen")
                 }

@@ -80,3 +80,21 @@ def test_cancel_popup_cancels(ui, qtbot, fx) -> None:
     qtbot.waitUntil(lambda: confirm.property("opened"), timeout=WAIT)
     assert "no se vuelve a pagar" in confirm.property("message")
     confirm.close()
+
+
+def test_subject_is_readable_while_typing(ui, qtbot, fx) -> None:
+    backend, root, _ = ui
+    backend.openBook(fx.con_indice.as_uri())
+    qtbot.waitUntil(lambda: backend.hasBook, timeout=WAIT)
+    field = _find(root, "subjectInput")
+    preview = _find(root, "subjectPreview")
+    qtbot.waitUntil(lambda: field.property("visible"), timeout=WAIT)
+    assert preview.property("visible")  # sin foco: vista previa con «…»
+    root.requestActivate()
+    field.forceActiveFocus()
+    qtbot.waitUntil(field.hasActiveFocus, timeout=WAIT)
+    assert not preview.property("visible")
+    assert field.property("color").alpha() == 255  # el texto que escribes se ve
+    field.setProperty("text", "Física")
+    field.textEdited.emit()
+    assert backend.subject == "Física"

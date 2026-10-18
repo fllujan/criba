@@ -110,7 +110,7 @@ Item {
                 Body {
                     Layout.fillWidth: true
                     text: screen.checking ? qsTr("Comprobando la clave con Anthropic. No cuesta nada.")
-                                          : Msg.error(backend.keyError)
+                                          : Msg.keyError(backend.keyError)
                     color: screen.failed ? Theme.danger : Theme.muted
                     Accessible.role: screen.failed ? Accessible.AlertMessage : Accessible.StaticText
                 }
